@@ -137,10 +137,6 @@
                     <groupId>org.antlr</groupId>
                     <artifactId>antlr4-maven-plugin</artifactId>
                     <version>${antlr4.version}</version>
-                    <configuration>
-                        <sourceDirectory>${basedir}/pgn-reader/src/main/resources</sourceDirectory>
-                        <includes>PGNImportFormat.g4</includes>
-                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

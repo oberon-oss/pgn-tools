@@ -5,65 +5,65 @@
 grammar PGNImportFormat;
 
 @header {
-package net.oberon.oss.chess.pgn.reader;
+package org.oberon.oss.chess.reader;
 }
 parse
- : pgn_database EOF
+ : pgnDatabase EOF
  ;
 
-pgn_database
- : pgn_game*
+pgnDatabase
+ : pgnGame*
  ;
 
-pgn_game
- : tag_section movetext_section game_termination
+pgnGame
+ : tagSection moveTextSection game_termination
  ;
 
-tag_section
- : tag_pair*
+tagSection
+ : tagPair*
  ;
 
-tag_pair
- : LEFT_BRACKET tag_name tag_value RIGHT_BRACKET
+tagPair
+ : LEFT_BRACKET tagName tagValue RIGHT_BRACKET
  ;
 
-tag_name
+tagName
  : SYMBOL
  ;
 
-tag_value
+tagValue
  : STRING
  ;
 
-movetext_section
- : element_sequence
+moveTextSection
+ : elementSequence
  ;
 
-element_sequence
+elementSequence
  : (element | recursive_variation)*
  ;
 
 element
- : processing_instruction
- | rest_of_line_comment
- | move_number_indication
- | san_move
- | move_comment
+ : processingInstruction
+ | restOfLineComment
+ | moveNumberIndication
+ | sanMove
+ | moveComment
  | nag
  ;
 
-move_number_indication
+moveNumberIndication
  : INTEGER (PERIOD|ELLIPSIS)?
  ;
 
-san_move
+sanMove
  : SYMBOL SUFFIX_ANNOTATION?
  ;
 
 recursive_variation
- : LEFT_PARENTHESIS element_sequence RIGHT_PARENTHESIS
+ : LEFT_PARENTHESIS elementSequence RIGHT_PARENTHESIS
  ;
-move_comment
+moveComment
  : BRACE_COMMENT
  ;
 
@@ -71,11 +71,11 @@ nag
  : NUMERIC_ANNOTATION_GLYPH
  ;
 
-rest_of_line_comment
+restOfLineComment
 : REST_OF_LINE_COMMENT
 ;
 
-processing_instruction
+processingInstruction
 : ESCAPE
 ;
 

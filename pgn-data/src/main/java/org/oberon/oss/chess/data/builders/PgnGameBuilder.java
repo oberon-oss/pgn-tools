@@ -8,6 +8,12 @@ import org.oberon.oss.chess.data.util.PgnClassBuilder;
 import java.util.List;
 import java.util.Set;
 
+
+/**
+ * Builder to create {@link PgnGame} objects.
+ *
+ * @since 1.0.0
+ */
 public class PgnGameBuilder implements PgnClassBuilder<PgnGame> {
     private Set<PgnTag> tagSet;
     private List<PgnPly> mainMoveSequence;

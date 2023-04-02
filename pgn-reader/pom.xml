@@ -39,6 +39,7 @@
                             </includes>
                             <visitor>true</visitor>
                             <listener>true</listener>
+                            <outputDirectory>target/generated-sources/org/oberon/oss/chess/reader</outputDirectory>
                         </configuration>
                         <executions>
                             <execution>

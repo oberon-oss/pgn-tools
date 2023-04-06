@@ -36,71 +36,71 @@ import java.io.InputStream;
  */
 public class PGNDataReader extends PGNImportFormatBaseListener {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PGNDataReader.class);
-    private final PGNEventProcessor processor;
-    int elementSequenceDepth = 0;
-    int plyNumber = 1;
-    private String tagName;
-    private String tagValue;
+	private static final Logger            LOGGER = LoggerFactory.getLogger(PGNDataReader.class);
+	private final        PGNEventProcessor processor;
+	int elementSequenceDepth = 0;
+	int plyNumber            = 1;
+	private String tagName;
+	private String tagValue;
 
-    public PGNDataReader(PGNEventProcessor processor) {
-        super();
-        this.processor = processor;
-    }
+	public PGNDataReader(PGNEventProcessor processor) {
+		super();
+		this.processor = processor;
+	}
 
-    public void processInputData(InputStream inputStream) throws IOException {
+	public void processInputData(InputStream inputStream) throws IOException {
 
-        Lexer lexer = new PGNImportFormatLexer(CharStreams.fromStream(inputStream));
-        CommonTokenStream commonTokenStream = new CommonTokenStream(lexer);
-        PGNImportFormatParser parser = new PGNImportFormatParser(commonTokenStream);
-        ParseTree parseTree = parser.parse();
-        ParseTreeWalker walker = new ParseTreeWalker();
-        walker.walk(this, parseTree);
-    }
+		Lexer                 lexer             = new PGNImportFormatLexer(CharStreams.fromStream(inputStream));
+		CommonTokenStream     commonTokenStream = new CommonTokenStream(lexer);
+		PGNImportFormatParser parser            = new PGNImportFormatParser(commonTokenStream);
+		ParseTree             parseTree         = parser.parse();
+		ParseTreeWalker       walker            = new ParseTreeWalker();
+		walker.walk(this, parseTree);
+	}
 
-    @Override
-    public void enterElementSequence(ElementSequenceContext ctx) {
-        super.enterElementSequence(ctx);
-        ++elementSequenceDepth;
-        processor.startMoveSequence(plyNumber);
-    }
+	@Override
+	public void enterElementSequence(ElementSequenceContext ctx) {
+		super.enterElementSequence(ctx);
+		++elementSequenceDepth;
+		processor.startMoveSequence(plyNumber);
+	}
 
-    @Override
-    public void exitElementSequence(ElementSequenceContext ctx) {
-        super.enterElementSequence(ctx);
-        --elementSequenceDepth;
-        processor.terminateMoveSequence();
-    }
+	@Override
+	public void exitElementSequence(ElementSequenceContext ctx) {
+		super.enterElementSequence(ctx);
+		--elementSequenceDepth;
+		processor.terminateMoveSequence();
+	}
 
-    @Override
-    public void enterTagName(TagNameContext ctx) {
-        super.enterTagName(ctx);
-        tagName = ctx.getText();
+	@Override
+	public void enterTagName(TagNameContext ctx) {
+		super.enterTagName(ctx);
+		tagName = ctx.getText();
 
-    }
+	}
 
-    @Override
-    public void enterTagValue(TagValueContext ctx) {
-        super.enterTagValue(ctx);
-        tagValue = ctx.getText();
-    }
+	@Override
+	public void enterTagValue(TagValueContext ctx) {
+		super.enterTagValue(ctx);
+		tagValue = ctx.getText();
+	}
 
-    @Override
-    public void exitTagPair(TagPairContext ctx) {
-        super.exitTagPair(ctx);
-        processor.addTag(tagName, tagValue);
-    }
+	@Override
+	public void exitTagPair(TagPairContext ctx) {
+		super.exitTagPair(ctx);
+		processor.addTag(tagName, tagValue);
+	}
 
-    @Override
-    public void enterPgnGame(PgnGameContext ctx) {
-        super.enterPgnGame(ctx);
-        processor.startGame();
-    }
+	@Override
+	public void enterPgnGame(PgnGameContext ctx) {
+		super.enterPgnGame(ctx);
+		processor.startGame();
+	}
 
-    @Override
-    public void exitPgnGame(PgnGameContext ctx) {
-        super.exitPgnGame(ctx);
-        processor.endGame();
-    }
+	@Override
+	public void exitPgnGame(PgnGameContext ctx) {
+		super.exitPgnGame(ctx);
+		processor.endGame();
+	}
 
 }

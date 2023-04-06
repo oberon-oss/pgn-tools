@@ -34,7 +34,7 @@ public class Main implements Callable<Integer> {
         loadLoggingProperties();
         LOGGER.info("PWD: {}",System.getProperty("user.dir"));
         for (File file : files) {
-            LOGGER.info("Processing file: {}; file {}",file, (file.exists() ? "exists":"not found"));
+            LOGGER.info("Processing file: {}; file {}",file.getCanonicalFile(), (file.exists() ? "exists":"not found"));
 
         }
         return 0;

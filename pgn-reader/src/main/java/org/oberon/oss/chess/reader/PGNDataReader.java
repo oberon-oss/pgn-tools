@@ -21,12 +21,19 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.oberon.oss.chess.data.PgnTag;
+import org.oberon.oss.chess.data.builders.PgnGameBuilder;
+import org.oberon.oss.chess.data.builders.PgnTagBuilder;
 import org.oberon.oss.chess.reader.PGNImportFormatParser.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * .
@@ -36,71 +43,97 @@ import java.io.InputStream;
  */
 public class PGNDataReader extends PGNImportFormatBaseListener {
 
-	private static final Logger            LOGGER = LoggerFactory.getLogger(PGNDataReader.class);
-	private final        PGNEventProcessor processor;
-	int elementSequenceDepth = 0;
-	int plyNumber            = 1;
-	private String tagName;
-	private String tagValue;
+    private static final Logger LOGGER = LoggerFactory.getLogger(PGNDataReader.class);
+    private final List<PgnGameContainer> containerList = new ArrayList<>();
+    private final PgnSource source;
+    int elementSequenceDepth = 0;
 
-	public PGNDataReader(PGNEventProcessor processor) {
-		super();
-		this.processor = processor;
-	}
+    private PgnGameBuilder gameBuilder;
+    private Set<PgnTag> tagSet;
+    private PgnTagBuilder tagBuilder;
 
-	public void processInputData(InputStream inputStream) throws IOException {
+    public PGNDataReader(PgnSource source) {
+        super();
+        this.source = source;
+    }
 
-		Lexer                 lexer             = new PGNImportFormatLexer(CharStreams.fromStream(inputStream));
-		CommonTokenStream     commonTokenStream = new CommonTokenStream(lexer);
-		PGNImportFormatParser parser            = new PGNImportFormatParser(commonTokenStream);
-		ParseTree             parseTree         = parser.parse();
-		ParseTreeWalker       walker            = new ParseTreeWalker();
-		walker.walk(this, parseTree);
-	}
+    public List<PgnGameContainer> processInputData() throws IOException {
 
-	@Override
-	public void enterElementSequence(ElementSequenceContext ctx) {
-		super.enterElementSequence(ctx);
-		++elementSequenceDepth;
-		processor.startMoveSequence(plyNumber);
-	}
+        //noinspection BlockingMethodInNonBlockingContext
+        try (InputStream inputStream = source.getSourceLocation().toURL().openStream()) {
+            Lexer lexer = new PGNImportFormatLexer(CharStreams.fromStream(inputStream));
+            CommonTokenStream commonTokenStream = new CommonTokenStream(lexer);
+            PGNImportFormatParser parser = new PGNImportFormatParser(commonTokenStream);
+            ParseTree parseTree = parser.parse();
+            ParseTreeWalker walker = new ParseTreeWalker();
+            walker.walk(this, parseTree);
+        }
+        return containerList;
+    }
 
-	@Override
-	public void exitElementSequence(ElementSequenceContext ctx) {
-		super.enterElementSequence(ctx);
-		--elementSequenceDepth;
-		processor.terminateMoveSequence();
-	}
 
-	@Override
-	public void enterTagName(TagNameContext ctx) {
-		super.enterTagName(ctx);
-		tagName = ctx.getText();
+    @Override
+    public void enterPgnGame(PgnGameContext ctx) {
+        gameBuilder = new PgnGameBuilder();
+        super.enterPgnGame(ctx);
+    }
 
-	}
+    @Override
+    public void enterTagSection(TagSectionContext ctx) {
+        super.enterTagSection(ctx);
+        tagSet = new HashSet<>();
+    }
 
-	@Override
-	public void enterTagValue(TagValueContext ctx) {
-		super.enterTagValue(ctx);
-		tagValue = ctx.getText();
-	}
+    @Override
+    public void enterTagPair(TagPairContext ctx) {
+        super.enterTagPair(ctx);
+        tagBuilder = new PgnTagBuilder();
+    }
 
-	@Override
-	public void exitTagPair(TagPairContext ctx) {
-		super.exitTagPair(ctx);
-		processor.addTag(tagName, tagValue);
-	}
+    @Override
+    public void enterTagName(TagNameContext ctx) {
+        super.enterTagName(ctx);
+        tagBuilder.setTagName(ctx.getText());
+    }
 
-	@Override
-	public void enterPgnGame(PgnGameContext ctx) {
-		super.enterPgnGame(ctx);
-		processor.startGame();
-	}
+    @Override
+    public void enterTagValue(TagValueContext ctx) {
+        super.enterTagValue(ctx);
+        tagBuilder.setTagValue(ctx.getText());
+    }
 
-	@Override
-	public void exitPgnGame(PgnGameContext ctx) {
-		super.exitPgnGame(ctx);
-		processor.endGame();
-	}
+    @Override
+    public void exitTagPair(TagPairContext ctx) {
+        super.exitTagPair(ctx);
+        tagSet.add(tagBuilder.build());
+        tagBuilder = null;
+    }
+
+    @Override
+    public void exitTagSection(TagSectionContext ctx) {
+        super.exitTagSection(ctx);
+        gameBuilder.setTagSet(tagSet);
+    }
+
+    @Override
+    public void enterElementSequence(ElementSequenceContext ctx) {
+        super.enterElementSequence(ctx);
+        ++elementSequenceDepth;
+    }
+
+    @Override
+    public void exitElementSequence(ElementSequenceContext ctx) {
+        super.enterElementSequence(ctx);
+        --elementSequenceDepth;
+
+    }
+
+    @Override
+    public void exitPgnGame(PgnGameContext ctx) {
+        super.exitPgnGame(ctx);
+        LOGGER.info("Writing game #{}", containerList.size() + 1);
+        containerList.add(new PgnGameContainer(source, gameBuilder.build(), ctx));
+        gameBuilder = null;
+    }
 
 }

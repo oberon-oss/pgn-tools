@@ -1,10 +1,8 @@
 package org.oberon.oss.chess.data;
 
 import org.oberon.oss.chess.data.builders.PgnTagBuilder;
-import org.oberon.oss.chess.data.util.BaseClass;
-import org.oberon.oss.chess.data.util.PgnClassBuilder;
 
-public class PgnTag implements BaseClass<PgnTag> {
+public class PgnTag  {
 
     private final String tagName;
 
@@ -19,8 +17,8 @@ public class PgnTag implements BaseClass<PgnTag> {
         return new PgnTag(builder);
     }
 
-    @Override
-    public PgnClassBuilder<PgnTag> getBuilder() {
+
+    public static PgnTagBuilder getBuilder() {
         return new PgnTagBuilder();
     }
 }

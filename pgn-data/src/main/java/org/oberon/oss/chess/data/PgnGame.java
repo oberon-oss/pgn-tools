@@ -1,19 +1,14 @@
 package org.oberon.oss.chess.data;
 
 import org.oberon.oss.chess.data.builders.PgnGameBuilder;
-import org.oberon.oss.chess.data.util.BaseClass;
-import org.oberon.oss.chess.data.util.PgnClassBuilder;
 
 import java.util.List;
 import java.util.Set;
 
-public class PgnGame implements BaseClass<PgnGame> {
-
-
+public class PgnGame  {
     private final Set<PgnTag> tagSet;
 
     private final List<PgnPly> mainMoveSequence;
-
 
     private PgnGame(PgnGameBuilder builder) {
         this.tagSet = builder.getTagSet();
@@ -24,8 +19,8 @@ public class PgnGame implements BaseClass<PgnGame> {
         return new PgnGame(pgnGameBuilder);
     }
 
-    @Override
-    public PgnClassBuilder<PgnGame> getBuilder() {
+
+    public static PgnGameBuilder getBuilder() {
         return new PgnGameBuilder();
     }
 }

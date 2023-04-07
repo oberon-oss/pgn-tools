@@ -2,10 +2,8 @@ package org.oberon.oss.chess.data;
 
 import org.jetbrains.annotations.NotNull;
 import org.oberon.oss.chess.data.builders.PgnPlyBuilder;
-import org.oberon.oss.chess.data.util.BaseClass;
-import org.oberon.oss.chess.data.util.PgnClassBuilder;
 
-public class PgnPly implements BaseClass<PgnPly> {
+public class PgnPly {
     private final int plyNumber;
     private final String moveText;
 
@@ -22,8 +20,7 @@ public class PgnPly implements BaseClass<PgnPly> {
         return new PgnPly(builder);
     }
 
-    @Override
-    public PgnClassBuilder<PgnPly> getBuilder() {
+    public static PgnPlyBuilder getBuilder() {
         return new PgnPlyBuilder();
     }
 }

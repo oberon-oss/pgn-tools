@@ -1,10 +1,16 @@
 package org.oberon.oss.chess.pgn;
 
+import org.oberon.oss.chess.reader.PGNDataReader;
+import org.oberon.oss.chess.reader.PgnGameContainer;
+import org.oberon.oss.chess.reader.PgnSource;
+import org.oberon.oss.chess.reader.PgnSourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.io.File;
+import java.net.URI;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -32,10 +38,26 @@ public class Main implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         loadLoggingProperties();
-        LOGGER.info("PWD: {}",System.getProperty("user.dir"));
+        LOGGER.info("PWD: {}", System.getProperty("user.dir"));
         for (File file : files) {
-            LOGGER.info("Processing file: {}; file {}",file.getCanonicalFile(), (file.exists() ? "exists":"not found"));
+            File canonicalFile = file.getCanonicalFile();
+            LOGGER.info("Processing file: {}; file {}", canonicalFile, (file.exists() ? "exists" : "not found"));
+            if (file.exists()) {
+                PGNDataReader reader = new PGNDataReader(new PgnSource() {
+                    @Override
+                    public PgnSourceType getSourceType() {
+                        return PgnSourceType.TEXT_FILE;
+                    }
+                    @Override
+                    public URI getSourceLocation() {
+                        return canonicalFile.toURI();
+                    }
+                }
+                );
+                List<PgnGameContainer> pgnGameContainers = reader.processInputData();
+                LOGGER.info("Games read: {}", pgnGameContainers.size());
 
+            }
         }
         return 0;
     }

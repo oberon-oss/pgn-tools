@@ -79,6 +79,13 @@ processingInstruction
 : ESCAPE
 ;
 
+game_termination
+ : WHITE_WINS
+ | BLACK_WINS
+ | DRAWN_GAME
+ | UNDECIDED_OR_UNKNOWN
+ ;
+
 BRACE_COMMENT
  : '{' ~'}'* '}'
  ;
@@ -89,13 +96,6 @@ REST_OF_LINE_COMMENT
 
 ESCAPE
  : {getCharPositionInLine() == 0}? '%' ~[\r\n]*
- ;
-
-game_termination
- : WHITE_WINS
- | BLACK_WINS
- | DRAWN_GAME
- | UNDECIDED_OR_UNKNOWN
  ;
 
 WHITE_WINS

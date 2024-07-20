@@ -16,6 +16,7 @@
 package org.oberon.oss.chess.reader;
 
 
+import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
@@ -24,9 +25,6 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.oberon.oss.chess.data.PgnTag;
 import org.oberon.oss.chess.data.builders.PgnGameBuilder;
 import org.oberon.oss.chess.data.builders.PgnTagBuilder;
-import org.oberon.oss.chess.reader.PGNImportFormatParser.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,16 +39,15 @@ import java.util.Set;
  * @author Fabien H. Dumay
  * @since 1.0.0
  */
+@Log4j2
 public class PGNDataReader extends PGNImportFormatBaseListener {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(PGNDataReader.class);
-    private final List<PgnGameContainer> containerList = new ArrayList<>();
-    private final PgnSource source;
+    private final        List<PgnGameContainer> containerList = new ArrayList<>();
+    private final        PgnSource              source;
     int elementSequenceDepth = 0;
 
     private PgnGameBuilder gameBuilder;
-    private Set<PgnTag> tagSet;
-    private PgnTagBuilder tagBuilder;
+    private Set<PgnTag>    tagSet;
+    private PgnTagBuilder  tagBuilder;
 
     public PGNDataReader(PgnSource source) {
         super();
@@ -61,11 +58,11 @@ public class PGNDataReader extends PGNImportFormatBaseListener {
 
         //noinspection BlockingMethodInNonBlockingContext
         try (InputStream inputStream = source.getSourceLocation().toURL().openStream()) {
-            Lexer lexer = new PGNImportFormatLexer(CharStreams.fromStream(inputStream));
-            CommonTokenStream commonTokenStream = new CommonTokenStream(lexer);
-            PGNImportFormatParser parser = new PGNImportFormatParser(commonTokenStream);
-            ParseTree parseTree = parser.parse();
-            ParseTreeWalker walker = new ParseTreeWalker();
+            Lexer                 lexer             = new PGNImportFormatLexer(CharStreams.fromStream(inputStream));
+            CommonTokenStream     commonTokenStream = new CommonTokenStream(lexer);
+            PGNImportFormatParser parser            = new PGNImportFormatParser(commonTokenStream);
+            ParseTree             parseTree         = parser.parse();
+            ParseTreeWalker       walker            = new ParseTreeWalker();
             walker.walk(this, parseTree);
         }
         return containerList;
@@ -73,63 +70,99 @@ public class PGNDataReader extends PGNImportFormatBaseListener {
 
 
     @Override
-    public void enterPgnGame(PgnGameContext ctx) {
+    public void enterPgnGame(PGNImportFormatParser.PgnGameContext ctx) {
         gameBuilder = new PgnGameBuilder();
         super.enterPgnGame(ctx);
     }
 
     @Override
-    public void enterTagSection(TagSectionContext ctx) {
-        super.enterTagSection(ctx);
+    public void enterTagSection(PGNImportFormatParser.TagSectionContext ctx) {
         tagSet = new HashSet<>();
     }
 
     @Override
-    public void enterTagPair(TagPairContext ctx) {
-        super.enterTagPair(ctx);
+    public void enterTagPair(PGNImportFormatParser.TagPairContext ctx) {
         tagBuilder = new PgnTagBuilder();
     }
 
     @Override
-    public void enterTagName(TagNameContext ctx) {
-        super.enterTagName(ctx);
+    public void enterTagName(PGNImportFormatParser.TagNameContext ctx) {
         tagBuilder.setTagName(ctx.getText());
     }
 
     @Override
-    public void enterTagValue(TagValueContext ctx) {
-        super.enterTagValue(ctx);
+    public void enterTagValue(PGNImportFormatParser.TagValueContext ctx) {
         tagBuilder.setTagValue(ctx.getText());
     }
 
     @Override
-    public void exitTagPair(TagPairContext ctx) {
-        super.exitTagPair(ctx);
+    public void exitTagPair(PGNImportFormatParser.TagPairContext ctx) {
         tagSet.add(tagBuilder.build());
         tagBuilder = null;
     }
 
     @Override
-    public void exitTagSection(TagSectionContext ctx) {
-        super.exitTagSection(ctx);
+    public void exitTagSection(PGNImportFormatParser.TagSectionContext ctx) {
         gameBuilder.setTagSet(tagSet);
     }
 
     @Override
-    public void enterElementSequence(ElementSequenceContext ctx) {
-        super.enterElementSequence(ctx);
+    public void enterElementSequence(PGNImportFormatParser.ElementSequenceContext ctx) {
         ++elementSequenceDepth;
     }
 
     @Override
-    public void exitElementSequence(ElementSequenceContext ctx) {
-        super.enterElementSequence(ctx);
+    public void enterMoveTextSection(PGNImportFormatParser.MoveTextSectionContext ctx) {
+    }
+
+    @Override
+    public void enterMoveNumberIndication(PGNImportFormatParser.MoveNumberIndicationContext ctx) {
+        LOGGER.info(ctx.getText());
+    }
+
+    @Override
+    public void enterSanMove(PGNImportFormatParser.SanMoveContext ctx) {
+        LOGGER.info(ctx.getText());
+    }
+
+    @Override
+    public void enterRecursive_variation(PGNImportFormatParser.Recursive_variationContext ctx) {
+        LOGGER.info(ctx.getText());
+    }
+
+    @Override
+    public void enterMoveComment(PGNImportFormatParser.MoveCommentContext ctx) {
+        LOGGER.info(ctx.getText());
+    }
+
+    @Override
+    public void enterNag(PGNImportFormatParser.NagContext ctx) {
+        LOGGER.info(ctx.getText());
+    }
+
+    @Override
+    public void enterRestOfLineComment(PGNImportFormatParser.RestOfLineCommentContext ctx) {
+        LOGGER.info(ctx.getText());
+    }
+
+    @Override
+    public void enterProcessingInstruction(PGNImportFormatParser.ProcessingInstructionContext ctx) {
+        LOGGER.info(ctx.getText());
+    }
+
+    @Override
+    public void enterGame_termination(PGNImportFormatParser.Game_terminationContext ctx) {
+        LOGGER.info(ctx.getText());
+    }
+
+    @Override
+    public void exitElementSequence(PGNImportFormatParser.ElementSequenceContext ctx) {
         --elementSequenceDepth;
 
     }
 
     @Override
-    public void exitPgnGame(PgnGameContext ctx) {
+    public void exitPgnGame(PGNImportFormatParser.PgnGameContext ctx) {
         super.exitPgnGame(ctx);
         LOGGER.info("Writing game #{}", containerList.size() + 1);
         containerList.add(new PgnGameContainer(source, gameBuilder.build(), ctx));

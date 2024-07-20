@@ -1,14 +1,14 @@
 package org.oberon.oss.chess.pgn;
 
+import lombok.extern.log4j.Log4j2;
 import org.oberon.oss.chess.reader.PGNDataReader;
 import org.oberon.oss.chess.reader.PgnGameContainer;
 import org.oberon.oss.chess.reader.PgnSource;
 import org.oberon.oss.chess.reader.PgnSourceType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
@@ -17,21 +17,22 @@ import java.util.concurrent.Callable;
 import static org.oberon.oss.chess.pgn.LogProperties.loadLoggingProperties;
 
 @CommandLine.Command(
-        version = "v1.0.0",
-        description = "Allows processing of PGN data in files and/or archives."
+      version = "v1.0.0",
+      description = "Allows processing of PGN data in files and/or archives."
 )
+@Log4j2
 public class Main implements Callable<Integer> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     @CommandLine.Option(
-            names = {"-f", "--files"},
-            required = true,
-            arity = "1.."
+          names = {"-f", "--files"},
+          required = true,
+          arity = "1.."
 
     )
     private Set<File> files;
 
     public static void main(String[] args) {
+        LOGGER.info("Files: {}", (Object) args);
         new CommandLine(Main.class).execute(args);
     }
 
@@ -43,22 +44,27 @@ public class Main implements Callable<Integer> {
             File canonicalFile = file.getCanonicalFile();
             LOGGER.info("Processing file: {}; file {}", canonicalFile, (file.exists() ? "exists" : "not found"));
             if (file.exists()) {
-                PGNDataReader reader = new PGNDataReader(new PgnSource() {
-                    @Override
-                    public PgnSourceType getSourceType() {
-                        return PgnSourceType.TEXT_FILE;
-                    }
-                    @Override
-                    public URI getSourceLocation() {
-                        return canonicalFile.toURI();
-                    }
-                }
-                );
-                List<PgnGameContainer> pgnGameContainers = reader.processInputData();
-                LOGGER.info("Games read: {}", pgnGameContainers.size());
 
+                List<PgnGameContainer> pgnGameContainers = getPgnGameContainers(canonicalFile);
+                LOGGER.info("Games read: {}", pgnGameContainers.size());
             }
         }
         return 0;
+    }
+
+    private static List<PgnGameContainer> getPgnGameContainers(File canonicalFile) throws IOException {
+        PGNDataReader reader = new PGNDataReader(new PgnSource() {
+            @Override
+            public PgnSourceType getSourceType() {
+                return PgnSourceType.TEXT_FILE;
+            }
+
+            @Override
+            public URI getSourceLocation() {
+                return canonicalFile.toURI();
+            }
+        }
+        );
+        return reader.processInputData();
     }
 }

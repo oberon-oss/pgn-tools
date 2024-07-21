@@ -22,16 +22,10 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.oberon.oss.chess.data.PgnTag;
-import org.oberon.oss.chess.data.builders.PgnGameBuilder;
-import org.oberon.oss.chess.data.builders.PgnTagBuilder;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * .
@@ -41,23 +35,11 @@ import java.util.Set;
  */
 @Log4j2
 public class PGNDataReader extends PGNImportFormatBaseListener {
-    private final        List<PgnGameContainer> containerList = new ArrayList<>();
-    private final        PgnSource              source;
-    int elementSequenceDepth = 0;
+    private long start = System.nanoTime();
 
-    private PgnGameBuilder gameBuilder;
-    private Set<PgnTag>    tagSet;
-    private PgnTagBuilder  tagBuilder;
+    public PgnGameContainer processInputData(PGNSection section) throws IOException {
 
-    public PGNDataReader(PgnSource source) {
-        super();
-        this.source = source;
-    }
-
-    public List<PgnGameContainer> processInputData() throws IOException {
-
-        //noinspection BlockingMethodInNonBlockingContext
-        try (InputStream inputStream = source.getSourceLocation().toURL().openStream()) {
+        try (InputStream inputStream = new ByteArrayInputStream(section.getSectionData().getBytes(section.getCharset()))) {
             Lexer                 lexer             = new PGNImportFormatLexer(CharStreams.fromStream(inputStream));
             CommonTokenStream     commonTokenStream = new CommonTokenStream(lexer);
             PGNImportFormatParser parser            = new PGNImportFormatParser(commonTokenStream);
@@ -65,108 +47,21 @@ public class PGNDataReader extends PGNImportFormatBaseListener {
             ParseTreeWalker       walker            = new ParseTreeWalker();
             walker.walk(this, parseTree);
         }
-        return containerList;
-    }
-
-
-    @Override
-    public void enterPgnGame(PGNImportFormatParser.PgnGameContext ctx) {
-        gameBuilder = new PgnGameBuilder();
-        super.enterPgnGame(ctx);
+        return null;
     }
 
     @Override
-    public void enterTagSection(PGNImportFormatParser.TagSectionContext ctx) {
-        tagSet = new HashSet<>();
+    public void enterParse(PGNImportFormatParser.ParseContext ctx) {
+        super.enterParse(ctx);
+        start = System.nanoTime();
     }
 
     @Override
-    public void enterTagPair(PGNImportFormatParser.TagPairContext ctx) {
-        tagBuilder = new PgnTagBuilder();
+    public void exitParse(PGNImportFormatParser.ParseContext ctx) {
+        long end;
+        super.exitParse(ctx);
+        end = System.nanoTime() - start;
+
+        LOGGER.info("exitParse {} microseconds", end / 1000);
     }
-
-    @Override
-    public void enterTagName(PGNImportFormatParser.TagNameContext ctx) {
-        tagBuilder.setTagName(ctx.getText());
-    }
-
-    @Override
-    public void enterTagValue(PGNImportFormatParser.TagValueContext ctx) {
-        tagBuilder.setTagValue(ctx.getText());
-    }
-
-    @Override
-    public void exitTagPair(PGNImportFormatParser.TagPairContext ctx) {
-        tagSet.add(tagBuilder.build());
-        tagBuilder = null;
-    }
-
-    @Override
-    public void exitTagSection(PGNImportFormatParser.TagSectionContext ctx) {
-        gameBuilder.setTagSet(tagSet);
-    }
-
-    @Override
-    public void enterElementSequence(PGNImportFormatParser.ElementSequenceContext ctx) {
-        ++elementSequenceDepth;
-    }
-
-    @Override
-    public void enterMoveTextSection(PGNImportFormatParser.MoveTextSectionContext ctx) {
-    }
-
-    @Override
-    public void enterMoveNumberIndication(PGNImportFormatParser.MoveNumberIndicationContext ctx) {
-        LOGGER.info(ctx.getText());
-    }
-
-    @Override
-    public void enterSanMove(PGNImportFormatParser.SanMoveContext ctx) {
-        LOGGER.info(ctx.getText());
-    }
-
-    @Override
-    public void enterRecursive_variation(PGNImportFormatParser.Recursive_variationContext ctx) {
-        LOGGER.info(ctx.getText());
-    }
-
-    @Override
-    public void enterMoveComment(PGNImportFormatParser.MoveCommentContext ctx) {
-        LOGGER.info(ctx.getText());
-    }
-
-    @Override
-    public void enterNag(PGNImportFormatParser.NagContext ctx) {
-        LOGGER.info(ctx.getText());
-    }
-
-    @Override
-    public void enterRestOfLineComment(PGNImportFormatParser.RestOfLineCommentContext ctx) {
-        LOGGER.info(ctx.getText());
-    }
-
-    @Override
-    public void enterProcessingInstruction(PGNImportFormatParser.ProcessingInstructionContext ctx) {
-        LOGGER.info(ctx.getText());
-    }
-
-    @Override
-    public void enterGame_termination(PGNImportFormatParser.Game_terminationContext ctx) {
-        LOGGER.info(ctx.getText());
-    }
-
-    @Override
-    public void exitElementSequence(PGNImportFormatParser.ElementSequenceContext ctx) {
-        --elementSequenceDepth;
-
-    }
-
-    @Override
-    public void exitPgnGame(PGNImportFormatParser.PgnGameContext ctx) {
-        super.exitPgnGame(ctx);
-        LOGGER.info("Writing game #{}", containerList.size() + 1);
-        containerList.add(new PgnGameContainer(source, gameBuilder.build(), ctx));
-        gameBuilder = null;
-    }
-
 }

@@ -25,7 +25,7 @@
             <AppenderRef ref="Console"/>
         </Logger>
 
-        <Root level="TRACE" additivity="false">
+        <Root level="INFO" additivity="false">
             <AppenderRef ref="Console"/>
         </Root>
     </Loggers>

@@ -8,15 +8,11 @@ grammar PGNImportFormat;
 package org.oberon.oss.chess.reader;
 }
 parse
- : pgnDatabase EOF
- ;
-
-pgnDatabase
- : pgnGame*
+ : pgnGame EOF
  ;
 
 pgnGame
- : tagSection moveTextSection game_termination
+ : tagSection moveComment? moveTextSection game_termination
  ;
 
 tagSection

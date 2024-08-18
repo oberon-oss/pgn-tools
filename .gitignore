@@ -87,3 +87,8 @@ target/
 /.idea/jpa-buddy.xml
 /.idea/misc.xml
 /.idea/inspectionProfiles/Project_Default.xml
+/.idea/modules.xml
+/.idea/pgn-tools.iml
+/.idea/codeStyles/Project.xml
+/.idea/scala_compiler.xml
+/.idea/sonarlint.xml

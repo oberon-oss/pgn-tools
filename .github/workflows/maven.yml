@@ -27,7 +27,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - run: mvn -B package --file pom.xml -P antlr4
-    - run: mkdir staging && cp target/*.jar staging
+    - run: mkdir staging && cp **/target/*.jar staging
     - uses: actions/upload-artifact@v4
       with:
         name: Package

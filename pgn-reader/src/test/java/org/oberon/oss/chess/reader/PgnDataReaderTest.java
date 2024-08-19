@@ -1,6 +1,7 @@
 package org.oberon.oss.chess.reader;
 
 import lombok.extern.log4j.Log4j2;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class PgnDataReaderTest {
     private static final String PATH = "src/test/resources/data/";
 
-    private static Stream<Arguments> testReadingFile() {
+    private static @NotNull Stream<Arguments> testReadingFile() {
         return Stream.of(
               Arguments.of(PATH + "365chess_games.pgn"),
               Arguments.of(PATH + "365chess_games_1.pgn"),

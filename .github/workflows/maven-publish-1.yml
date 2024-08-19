@@ -52,7 +52,7 @@ jobs:
           settings-path: ${{ github.workspace }} # location for the settings.xml file
 
       - name: Run tests and coverage
-        run: mvn -B clean test --file pom.xml -P antlr4
+        run: mvn -B clean test --file pom.xml -P antlr4 -DskipTests=false
 
   publish:
     runs-on: ubuntu-latest

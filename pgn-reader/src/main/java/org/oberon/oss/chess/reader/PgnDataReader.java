@@ -36,7 +36,7 @@ import java.io.InputStream;
  */
 @Log4j2
 public class PgnDataReader extends PGNImportFormatBaseListener {
-    private       long                     start   = System.nanoTime();
+    private final long                     start   = System.nanoTime();
     private final PgnGameContainer.Builder builder = PgnGameContainer.builder();
 
     private PgnDataReader() {
@@ -70,7 +70,6 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
     @Override
     public void enterParse(PGNImportFormatParser.ParseContext ctx) {
         super.enterParse(ctx);
-        start = System.nanoTime();
     }
 
     @Override

@@ -36,8 +36,8 @@ public class FilePgnSectionProvider implements PgnSectionProvider {
      * @throws FileNotFoundException If the file specified by 'pgnFile' does not exists.
      * @since 1.0.0
      */
-    public FilePgnSectionProvider(@NotNull File pgnFile) throws FileNotFoundException {
-        reader    = new LineNumberReader(new FileReader(pgnFile));
+    public FilePgnSectionProvider(@NotNull File pgnFile) throws IOException {
+        reader    = new LineNumberReader(new FileReader(pgnFile.getCanonicalFile()));
         pgnSource = new PgnSource() {
             @Override
             public PgnSourceType getSourceType() {

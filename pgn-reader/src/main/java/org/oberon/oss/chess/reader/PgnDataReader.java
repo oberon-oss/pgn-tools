@@ -22,6 +22,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -34,10 +35,26 @@ import java.io.InputStream;
  * @since 1.0.0
  */
 @Log4j2
-public class PGNDataReader extends PGNImportFormatBaseListener {
-    private long start = System.nanoTime();
+public class PgnDataReader extends PGNImportFormatBaseListener {
+    private       long                     start   = System.nanoTime();
+    private final PgnGameContainer.Builder builder = PgnGameContainer.builder();
 
-    public PgnGameContainer processInputData(PGNSection section) throws IOException {
+    private PgnDataReader() {
+
+    }
+
+    public static void processPgnData(
+          @NotNull FilePgnSectionProvider provider,
+          @NotNull PgnGameContainerProcessor processor
+    ) throws IOException {
+        PgnDataReader reader = new PgnDataReader();
+        while (provider.hasNext()) {
+            processor.processGameContainer(reader.processInputData(provider.next()));
+        }
+    }
+
+
+    public PgnGameContainer processInputData(PgnSection section) throws IOException {
 
         try (InputStream inputStream = new ByteArrayInputStream(section.getSectionData().getBytes(section.getCharset()))) {
             Lexer                 lexer             = new PGNImportFormatLexer(CharStreams.fromStream(inputStream));
@@ -47,7 +64,7 @@ public class PGNDataReader extends PGNImportFormatBaseListener {
             ParseTreeWalker       walker            = new ParseTreeWalker();
             walker.walk(this, parseTree);
         }
-        return null;
+        return builder.build();
     }
 
     @Override

@@ -54,7 +54,7 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
     }
 
 
-    public PgnGameContainer processInputData(PgnSection section) throws IOException {
+    private PgnGameContainer processInputData(PgnSection section) throws IOException {
 
         try (InputStream inputStream = new ByteArrayInputStream(section.getSectionData().getBytes(section.getCharset()))) {
             Lexer                 lexer             = new PGNImportFormatLexer(CharStreams.fromStream(inputStream));
@@ -69,15 +69,15 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
 
     @Override
     public void enterParse(PGNImportFormatParser.ParseContext ctx) {
-        super.enterParse(ctx);
+        LOGGER.trace("enter: enterParse");
     }
 
     @Override
     public void exitParse(PGNImportFormatParser.ParseContext ctx) {
         long end;
-        super.exitParse(ctx);
         end = System.nanoTime() - start;
 
         LOGGER.info("exitParse {} microseconds", end / 1000);
+        LOGGER.trace("leave: enterParse");
     }
 }

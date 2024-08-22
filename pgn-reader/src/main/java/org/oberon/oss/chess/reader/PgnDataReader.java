@@ -51,7 +51,7 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
     public static void processPgnData(
           @NotNull FilePgnSectionProvider provider,
           @NotNull PgnGameContainerProcessor processor
-    ) throws IOException {
+    ) {
         PgnDataReader reader = new PgnDataReader();
         while (provider.hasNext()) {
             processor.processGameContainer(reader.processInputData(provider.next()));
@@ -59,7 +59,7 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
     }
 
 
-    private PgnGameContainer processInputData(PgnSection section) throws IOException {
+    private PgnGameContainer processInputData(PgnSection section) {
 
         try (InputStream inputStream = new ByteArrayInputStream(section.getSectionData().getBytes(section.getCharset()))) {
             builder.pgnSection(section);
@@ -72,7 +72,7 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
             walker.walk(this, parseTree);
         }
         catch (Exception e) {
-            LOGGER.error("Terminated. exception encountered:", e);
+            LOGGER.error("Terminated. exception encountered for PgnSection=\n{}", section, e);
         }
         builder.dateTimeRead(LocalDateTime.now());
         return builder.build();
@@ -96,14 +96,14 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
 
     @Override
     public void enterRecursiveVariation(PGNImportFormatParser.RecursiveVariationContext ctx) {
-        LOGGER.debug("Entering recursive variation at depth {}",builderStack.size());
+        LOGGER.debug("Entering recursive variation at depth {}", builderStack.size());
         builderStack.push(elementSequenceBuilder);
         elementSequenceBuilder = ElementSequence.builder();
     }
 
     @Override
     public void exitRecursiveVariation(PGNImportFormatParser.RecursiveVariationContext ctx) {
-        LOGGER.debug("Leaving recursive variation at depth {}",builderStack.size());
+        LOGGER.debug("Leaving recursive variation at depth {}", builderStack.size());
         ElementSequence.Builder oldBuilder = builderStack.pop();
         oldBuilder.element(elementSequenceBuilder.build());
         elementSequenceBuilder = oldBuilder;

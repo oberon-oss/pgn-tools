@@ -29,10 +29,12 @@ import org.oberon.oss.chess.data.Tag;
 import org.oberon.oss.chess.data.element.*;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * .

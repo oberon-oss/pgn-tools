@@ -1,5 +1,6 @@
 package org.oberon.oss.chess.reader;
 
+import lombok.ToString;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,17 +39,7 @@ public class FilePgnSectionProvider implements PgnSectionProvider {
      */
     public FilePgnSectionProvider(@NotNull File pgnFile) throws IOException {
         reader    = new LineNumberReader(new FileReader(pgnFile.getCanonicalFile()));
-        pgnSource = new PgnSource() {
-            @Override
-            public PgnSourceType getSourceType() {
-                return PgnSourceType.TEXT_FILE;
-            }
-
-            @Override
-            public URL getSourceURL() throws MalformedURLException {
-                return pgnFile.toURI().toURL();
-            }
-        };
+        pgnSource = new MyPgnSource(pgnFile);
     }
 
     @Override
@@ -134,5 +125,35 @@ public class FilePgnSectionProvider implements PgnSectionProvider {
             eof  = line == null;
         }
         return line;
+    }
+
+    @Override
+    public String toString() {
+        return "FilePgnSectionProvider{" +
+               "reader=" + reader +
+               ", pgnSource=" + pgnSource +
+               ", eof=" + eof +
+               ", bufferedLine='" + bufferedLine + '\'' +
+               ", gameIndex=" + gameIndex +
+               '}';
+    }
+
+    @ToString
+    private static class MyPgnSource implements PgnSource {
+        private final @NotNull File pgnFile;
+
+        public MyPgnSource(@NotNull File pgnFile) {
+            this.pgnFile = pgnFile;
+        }
+
+        @Override
+        public PgnSourceType getSourceType() {
+            return PgnSourceType.TEXT_FILE;
+        }
+
+        @Override
+        public URL getSourceURL() throws MalformedURLException {
+            return pgnFile.toURI().toURL();
+        }
     }
 }

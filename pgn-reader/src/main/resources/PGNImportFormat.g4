@@ -12,7 +12,7 @@ parse
  ;
 
 pgnGame
- : tagSection moveComment? moveTextSection game_termination
+ : tagSection moveComment? moveTextSection gameTermination
  ;
 
 tagSection
@@ -36,7 +36,7 @@ moveTextSection
  ;
 
 elementSequence
- : (element | recursive_variation)*
+ : (element | recursiveVariation)*
  ;
 
 element
@@ -56,7 +56,7 @@ sanMove
  : SYMBOL SUFFIX_ANNOTATION?
  ;
 
-recursive_variation
+recursiveVariation
  : LEFT_PARENTHESIS elementSequence RIGHT_PARENTHESIS
  ;
 moveComment
@@ -75,7 +75,7 @@ processingInstruction
 : ESCAPE
 ;
 
-game_termination
+gameTermination
  : WHITE_WINS
  | BLACK_WINS
  | DRAWN_GAME
@@ -106,6 +106,10 @@ DRAWN_GAME
  : '1/2-1/2'
  ;
 
+UNDECIDED_OR_UNKNOWN
+ : '*'
+ ;
+
 SPACES
  : [ \t\r\n]+ -> skip
  ;
@@ -124,10 +128,6 @@ PERIOD
 
 ELLIPSIS
  : '...'
- ;
-
-UNDECIDED_OR_UNKNOWN
- : '*'
  ;
 
 LEFT_BRACKET

@@ -8,7 +8,7 @@ import lombok.ToString;
 @Getter
 @Builder
 @ToString
-public class PgnTag  {
+public class Tag {
     private final String tagName;
     private final String tagValue;
 }

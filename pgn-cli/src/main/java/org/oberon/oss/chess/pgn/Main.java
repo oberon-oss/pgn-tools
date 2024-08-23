@@ -1,14 +1,13 @@
 package org.oberon.oss.chess.pgn;
 
 import lombok.extern.log4j.Log4j2;
-import org.oberon.oss.chess.reader.FilePgnSectionProvider;
-import org.oberon.oss.chess.reader.PgnDataReader;
-import org.oberon.oss.chess.reader.PgnGameContainer;
-import org.oberon.oss.chess.reader.PgnGameContainerProcessor;
+import org.oberon.oss.chess.reader.*;
 import picocli.CommandLine;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import static org.oberon.oss.chess.pgn.LogProperties.loadLoggingProperties;
@@ -41,17 +40,35 @@ public class Main implements Callable<Integer> {
             File canonicalFile = file.getCanonicalFile();
             LOGGER.info("Processing file: {}; file {}", canonicalFile, (file.exists() ? "exists" : "not found"));
             if (file.exists()) {
-                PgnDataReader.processPgnData(new FilePgnSectionProvider(canonicalFile), new Processor());
+                Processor processor = new Processor();
+                PgnDataReader.processPgnData(new FilePgnSectionProvider(canonicalFile), processor);
+                processor.logProgress(true);
             }
         }
         return 0;
     }
 
     private static class Processor implements PgnGameContainerProcessor {
-
+        private int index;
         @Override
         public void processGameContainer(PgnGameContainer container) {
-            LOGGER.info(container);
+            Map<ErrorLogEntry, Set<String>> errors = container.getRecordErrors();
+            if (!errors.isEmpty()) {
+                for (ErrorLogEntry entry : errors.keySet()) {
+                    LOGGER.warn("{}",entry.getFormattedLogRecord());
+                }
+
+            }
+
+            index = container.getPgnSection().getIndex();
+            if (index % 100 == 0) {
+                logProgress(false);
+            }
+            LOGGER.debug(container);
+        }
+
+        private void logProgress(boolean done) {
+            LOGGER.info(done ? "File processed, with {} games" : "{} Games processed.",index);
         }
     }
 }

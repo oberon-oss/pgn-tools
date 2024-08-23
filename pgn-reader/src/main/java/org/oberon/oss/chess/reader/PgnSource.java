@@ -27,5 +27,5 @@ public interface PgnSource {
      * @throws MalformedURLException if the implementing class fails to create a valid URL to identify the PGN source
      * @since 1.0.0
      */
-    URL getSourceURL() throws MalformedURLException;
+    URL getSourceURL();
 }

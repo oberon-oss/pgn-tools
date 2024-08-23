@@ -57,7 +57,7 @@ public class FilePgnSectionProvider implements PgnSectionProvider {
         int lineNumber;
 
         try {
-            currentSection = new StringBuilder("\n");
+            currentSection = new StringBuilder();
             lineNumber     = syncToTagSectionStart(currentSection);
             readTagSection(currentSection);
             readRemainingGameData(currentSection);
@@ -152,8 +152,13 @@ public class FilePgnSectionProvider implements PgnSectionProvider {
         }
 
         @Override
-        public URL getSourceURL() throws MalformedURLException {
-            return pgnFile.toURI().toURL();
+        public URL getSourceURL() {
+            try {
+                return pgnFile.toURI().toURL();
+            }
+            catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }

@@ -15,7 +15,6 @@
  */
 package org.oberon.oss.chess.reader;
 
-
 import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -44,57 +43,56 @@ import java.util.Set;
  */
 @Log4j2
 public class PgnDataReader extends PGNImportFormatBaseListener {
-    private final PgnGameContainer.Builder builder = PgnGameContainer.builder();
+    private final PgnGameContainer.Builder       builder      = PgnGameContainer.builder();
+    private final Game.Builder                   gameBuilder  = Game.builder();
+    private final ErrorHandler                   errorHandler = new ErrorHandler(builder);
+    private final Deque<ElementSequence.Builder> builderStack = new ArrayDeque<>();
+    private final Set<Tag>                       tagSection   = new HashSet<>();
 
     private PgnDataReader() {
 
     }
 
-    public static void processPgnData(
-          @NotNull FilePgnSectionProvider provider,
-          @NotNull PgnGameContainerProcessor processor
-    ) {
-        PgnDataReader reader = new PgnDataReader();
+    public static void processPgnData(@NotNull FilePgnSectionProvider provider, @NotNull PgnGameContainerProcessor processor) {
         while (provider.hasNext()) {
-            processor.processGameContainer(reader.processInputData(provider.next()));
+            processor.processGameContainer(new PgnDataReader().processInputData(provider.next()));
         }
     }
-
 
     private PgnGameContainer processInputData(PgnSection section) {
 
         try (InputStream inputStream = new ByteArrayInputStream(section.getSectionData().getBytes(section.getCharset()))) {
-            builder.pgnSection(section);
+            builder.setPgnSection(section);
 
-            Lexer                 lexer             = new PGNImportFormatLexer(CharStreams.fromStream(inputStream));
-            CommonTokenStream     commonTokenStream = new CommonTokenStream(lexer);
-            PGNImportFormatParser parser            = new PGNImportFormatParser(commonTokenStream);
-            ParseTree             parseTree         = parser.parse();
-            ParseTreeWalker       walker            = new ParseTreeWalker();
+            Lexer             lexer             = new PGNImportFormatLexer(CharStreams.fromStream(inputStream));
+            CommonTokenStream commonTokenStream = new CommonTokenStream(lexer);
+
+            PGNImportFormatParser parser = new PGNImportFormatParser(commonTokenStream);
+            parser.removeErrorListeners();
+            parser.addErrorListener(errorHandler);
+
+            ParseTree       parseTree = parser.parse();
+            ParseTreeWalker walker    = new ParseTreeWalker();
+
             walker.walk(this, parseTree);
         }
         catch (Exception e) {
-            LOGGER.error("Terminated. exception encountered for PgnSection=\n{}", section, e);
+            LOGGER.error("Terminated. exception encountered: {}", e.getMessage(), e);
         }
-        builder.dateTimeRead(LocalDateTime.now());
+        builder.setDateTimeRead(LocalDateTime.now());
         return builder.build();
     }
 
+    private long                    start                  = 0;
+    private Tag.Builder             tagBuilder             = Tag.builder();
+    private ElementSequence.Builder elementSequenceBuilder = ElementSequence.builder();
 
-    private ElementSequence.Builder elementSequenceBuilder = null;
-
-    @Override
-    public void enterMoveTextSection(PGNImportFormatParser.MoveTextSectionContext ctx) {
-        elementSequenceBuilder = ElementSequence.builder();
-    }
 
     @Override
     public void exitMoveTextSection(PGNImportFormatParser.MoveTextSectionContext ctx) {
         gameBuilder.elementSequence(elementSequenceBuilder.build());
-        elementSequenceBuilder = null;
+        elementSequenceBuilder = ElementSequence.builder();
     }
-
-    private final Deque<ElementSequence.Builder> builderStack = new ArrayDeque<>();
 
     @Override
     public void enterRecursiveVariation(PGNImportFormatParser.RecursiveVariationContext ctx) {
@@ -146,8 +144,6 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
         gameBuilder.gameTermination(new GameTermination(ctx.getText()));
     }
 
-    private long start = 0;
-
     @Override
     public void enterParse(PGNImportFormatParser.ParseContext ctx) {
         start = System.nanoTime();
@@ -156,47 +152,24 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
 
     @Override
     public void exitParse(PGNImportFormatParser.ParseContext ctx) {
-        builder.parseTime((int) (System.nanoTime() - start));
+        builder.setParseTime((int) (System.nanoTime() - start));
         LOGGER.trace("leave: enterParse");
-    }
-
-    private Game.Builder gameBuilder = null;
-
-    @Override
-    public void enterPgnGame(PGNImportFormatParser.PgnGameContext ctx) {
-        gameBuilder = Game.builder();
     }
 
     @Override
     public void exitPgnGame(PGNImportFormatParser.PgnGameContext ctx) {
-        builder.game(gameBuilder.build());
-        gameBuilder = null;
-    }
-
-    private Set<Tag> tagSection = null;
-
-    @Override
-    public void enterTagSection(PGNImportFormatParser.TagSectionContext ctx) {
-        tagSection = new HashSet<>();
+        builder.setGame(gameBuilder.build());
     }
 
     @Override
     public void exitTagSection(PGNImportFormatParser.TagSectionContext ctx) {
         gameBuilder.tagSection(tagSection);
-        tagSection = null;
-    }
-
-    private Tag.Builder tagBuilder = null;
-
-    @Override
-    public void enterTagPair(PGNImportFormatParser.TagPairContext ctx) {
-        tagBuilder = Tag.builder();
     }
 
     @Override
     public void exitTagPair(PGNImportFormatParser.TagPairContext ctx) {
         tagSection.add(tagBuilder.build());
-        tagBuilder = null;
+        tagBuilder = Tag.builder();
     }
 
     @Override

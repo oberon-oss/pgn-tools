@@ -1,28 +1,29 @@
 package org.oberon.oss.chess.pgn;
 
 import lombok.extern.log4j.Log4j2;
-import org.oberon.oss.chess.reader.*;
+import org.oberon.oss.chess.reader.FilePgnSectionProvider;
+import org.oberon.oss.chess.reader.PgnDataReader;
+import org.oberon.oss.chess.reader.PgnGameContainer;
+import org.oberon.oss.chess.reader.PgnGameContainerProcessor;
 import picocli.CommandLine;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 import static org.oberon.oss.chess.pgn.LogProperties.loadLoggingProperties;
 
 @CommandLine.Command(
-      version = "v1.0.0",
-      description = "Allows processing of PGN data in files and/or archives."
+        version = "v1.0.0",
+        description = "Allows processing of PGN data in files and/or archives."
 )
 @Log4j2
 public class Main implements Callable<Integer> {
 
     @CommandLine.Option(
-          names = {"-f", "--files"},
-          required = true,
-          arity = "1.."
+            names = {"-f", "--files"},
+            required = true,
+            arity = "1.."
 
     )
     private List<File> files;
@@ -50,14 +51,11 @@ public class Main implements Callable<Integer> {
 
     private static class Processor implements PgnGameContainerProcessor {
         private int index;
+
         @Override
         public void processGameContainer(PgnGameContainer container) {
-            Map<ErrorLogEntry, Set<String>> errors = container.getRecordErrors();
-            if (!errors.isEmpty()) {
-                for (ErrorLogEntry entry : errors.keySet()) {
-                    LOGGER.warn("{}",entry.getFormattedLogRecord());
-                }
-
+            if (container.hasErrors()) {
+                LOGGER.warn("{}", container.getFormattedLogRecord());
             }
 
             index = container.getPgnSection().getIndex();
@@ -68,7 +66,7 @@ public class Main implements Callable<Integer> {
         }
 
         private void logProgress(boolean done) {
-            LOGGER.info(done ? "File processed, with {} games" : "{} Games processed.",index);
+            LOGGER.info(done ? "File processed, with {} games" : "{} Games processed.", index);
         }
     }
 }

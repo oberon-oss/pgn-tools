@@ -59,15 +59,19 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
         }
     }
 
-    private PgnGameContainer processInputData(PgnSection section) {
 
+    private long                    start                  = 0;
+    private Tag.Builder             tagBuilder             = Tag.builder();
+    private ElementSequence.Builder elementSequenceBuilder = ElementSequence.builder();
+
+    private PgnGameContainer processInputData(PgnSection section) {
         try (InputStream inputStream = new ByteArrayInputStream(section.getSectionData().getBytes(section.getCharset()))) {
             builder.setPgnSection(section);
 
-            Lexer             lexer             = new PGNImportFormatLexer(CharStreams.fromStream(inputStream));
-            CommonTokenStream commonTokenStream = new CommonTokenStream(lexer);
+            Lexer                 lexer             = new PGNImportFormatLexer(CharStreams.fromStream(inputStream));
+            CommonTokenStream     commonTokenStream = new CommonTokenStream(lexer);
+            PGNImportFormatParser parser            = new PGNImportFormatParser(commonTokenStream);
 
-            PGNImportFormatParser parser = new PGNImportFormatParser(commonTokenStream);
             parser.removeErrorListeners();
             parser.addErrorListener(errorHandler);
 
@@ -75,18 +79,13 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
             ParseTreeWalker walker    = new ParseTreeWalker();
 
             walker.walk(this, parseTree);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
+            errorHandler.applicationError(e);
             LOGGER.error("Terminated. exception encountered: {}", e.getMessage(), e);
         }
         builder.setDateTimeRead(LocalDateTime.now());
         return builder.build();
     }
-
-    private long                    start                  = 0;
-    private Tag.Builder             tagBuilder             = Tag.builder();
-    private ElementSequence.Builder elementSequenceBuilder = ElementSequence.builder();
-
 
     @Override
     public void exitMoveTextSection(PGNImportFormatParser.MoveTextSectionContext ctx) {

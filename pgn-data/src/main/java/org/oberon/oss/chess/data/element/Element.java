@@ -1,4 +1,8 @@
 package org.oberon.oss.chess.data.element;
 
-public interface Element {
+/**
+ * Represents
+ */
+public interface Element<T> {
+    T getElementData();
 }

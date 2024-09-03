@@ -52,8 +52,12 @@ moveNumberIndication
  : INTEGER (PERIOD|ELLIPSIS)?
  ;
 
+suffix
+: SUFFIX_ANNOTATION
+;
+
 sanMove
- : SYMBOL SUFFIX_ANNOTATION?
+ : SYMBOL suffix?
  ;
 
 recursiveVariation

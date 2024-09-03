@@ -7,9 +7,19 @@ import lombok.ToString;
 
 import java.util.List;
 
+/**
+ * @author Fabien H. Dumay
+ * @since 1.0.0
+ */
 @Getter
 @Builder
 @ToString
-public class ElementSequence implements Element{
-    @Singular private final List<Element> elements;
+public class ElementSequence implements Element<List<Element<?>>> {
+    @Singular
+    private final List<Element<?>> elements;
+
+    @Override
+    public List<Element<?>> getElementData() {
+        return List.copyOf(elements);
+    }
 }

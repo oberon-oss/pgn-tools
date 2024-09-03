@@ -4,6 +4,8 @@ import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import org.oberon.oss.chess.data.Game;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -23,11 +25,11 @@ public class PgnGameContainer {
                              final PgnSection pgnSection,
                              Game game,
                              Set<ErrorLogRecord> recordErrors
-                            ) {
-        this.parseTime = parseTime;
+    ) {
+        this.parseTime    = parseTime;
         this.dateTimeRead = dateTimeRead;
-        this.pgnSection = pgnSection;
-        this.game = game;
+        this.pgnSection   = pgnSection;
+        this.game         = game;
         this.recordErrors = Set.copyOf(recordErrors);
     }
 
@@ -40,38 +42,55 @@ public class PgnGameContainer {
             return "** No errors detected **";
         }
 
-        StringBuilder stringBuilder = new StringBuilder("\n\t===========================================");
+        StringBuilder sb = new StringBuilder("\n\t===========================================");
 
-        stringBuilder.append("\n\tPgn source      : ").append(pgnSection.getPgnSource().getSourceURL())
-                     .append("\n\tGame Index      : ").append(pgnSection.getIndex())
-                     .append("\n\tstarting line   : ").append(pgnSection.getStartingLine())
-                     .append("\n\t# of lines      : ").append(pgnSection.getLines())
-                     .append("\n\t---------------- Game text ----------------");
+        sb.append("\n\tPgn source      : ").append(pgnSection.getPgnSource().getSourceURL())
+          .append("\n\tGame Index      : ").append(pgnSection.getIndex())
+          .append("\n\tstarting line   : ").append(pgnSection.getStartingLine())
+          .append("\n\t# of lines      : ").append(pgnSection.getLines())
+          .append("\n\t---------------- Game text ----------------");
         int lineCounter = pgnSection.getStartingLine();
         for (String string : pgnSection.getSectionData().split("\n")) {
-            stringBuilder.append("\n\t").append(String.format("%-8d", lineCounter++)).append(": ").append(string);
+            sb.append("\n\t").append(String.format("%-8d", lineCounter++)).append(": ").append(string);
         }
 
-        stringBuilder.append("\n\t-------------------------------------------");
+        sb.append("\n\t-------------------------------------------");
 
         int errorNo = 1;
         for (ErrorLogRecord recordError : recordErrors) {
-            stringBuilder.append(String.format("%n\tError %-2d of %-2d: ", errorNo++, recordErrors.size()))
-                         .append(" line #").append(recordError.getLine() + pgnSection.getStartingLine()-1)
-                         .append(", @offset=").append(recordError.getOffset())
-                         .append(", source=").append(recordError.getSource());
-            if (recordError.getMessage() != null) {
-                stringBuilder.append(", msg=").append(recordError.getMessage());
+            boolean exceptionPresent = recordError.getException() != null;
+
+            sb.append(String.format("%n\tError %-2d of %-2d: ", errorNo++, recordErrors.size()))
+              .append(", source=").append(recordError.getSource());
+
+            if (!exceptionPresent) {
+                sb.append(" line #").append(recordError.getLine() + pgnSection.getStartingLine() - 1)
+                  .append(", @offset=").append(recordError.getOffset());
             }
-            if (recordError.getException() != null) {
-                stringBuilder.append("\n\t***** Stack trace *****");
-                for (StackTraceElement element : recordError.getException().getStackTrace()) {
-                    stringBuilder.append("\n\t").append(element.toString());
-                }
+            if (recordError.getMessage() != null) {
+                sb.append(", msg=").append(recordError.getMessage());
+            }
+            if (exceptionPresent) {
+                writeStackTrace(sb, recordError.getException());
             }
         }
 
-        return stringBuilder.append("\n\t===========================================\n").toString();
+        return sb.append("\n\t===========================================\n").toString();
+    }
+
+    private void writeStackTrace(StringBuilder sb, Exception exception) {
+        sb.append("\n\t***** Stack trace *****");
+
+        StringWriter stringWriter     = new StringWriter();
+        PrintWriter  stackTraceWriter = new PrintWriter(stringWriter);
+        exception.printStackTrace(stackTraceWriter);
+        stackTraceWriter.flush();
+        String[] split = stringWriter.toString().split("\n");
+
+        for (String line : split) {
+            sb.append("\n\t").append(line.replace("\r", ""));
+        }
+
     }
 
     public static Builder builder() {

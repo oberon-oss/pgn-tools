@@ -24,7 +24,7 @@ public class ErrorHandler implements ANTLRErrorListener {
                                   .source("syntax error")
                                   .message(additionalInformation)
                                   .build()
-                   );
+               );
     }
 
     @Override
@@ -36,7 +36,7 @@ public class ErrorHandler implements ANTLRErrorListener {
                                   .offset(ct.getCharPositionInLine())
                                   .source("report ambiguity")
                                   .build()
-                   );
+               );
     }
 
     @Override
@@ -48,7 +48,7 @@ public class ErrorHandler implements ANTLRErrorListener {
                                   .offset(ct.getCharPositionInLine())
                                   .source("report attempting full context")
                                   .build()
-                   );
+               );
     }
 
     @Override
@@ -59,19 +59,27 @@ public class ErrorHandler implements ANTLRErrorListener {
                                   .offset(offset)
                                   .source("report context sensitivity")
                                   .build()
-                   );
+               );
     }
 
     public void applicationError(final Exception e) {
         builder.getRecordErrors()
                .add(ErrorLogRecord
-                            .builder()
-                            .line(-1)
-                            .offset(-1)
-                            .source("application error")
-                            .message(e.getMessage())
-                            .exception(e)
-                            .build()
-                   );
+                          .builder()
+                          .source("application error")
+                          .message(e.getMessage())
+                          .exception(e)
+                          .build()
+               );
+    }
+
+    public void unknownSuffix(String text) {
+        builder.getRecordErrors()
+               .add(ErrorLogRecord
+                          .builder()
+                          .source("unknown suffix")
+                          .message(text)
+                          .build()
+               );
     }
 }

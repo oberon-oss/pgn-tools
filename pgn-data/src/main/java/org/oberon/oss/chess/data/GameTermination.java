@@ -2,20 +2,18 @@ package org.oberon.oss.chess.data;
 
 import lombok.Getter;
 import lombok.ToString;
-import org.oberon.oss.chess.data.element.Element;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Getter
 @ToString
-public class GameTermination implements Element {
+public class GameTermination {
     private final TerminationReason reason;
 
     public GameTermination(String text) {
         reason = TerminationReason.lookup(text);
     }
-
 
     @Getter
     public enum TerminationReason {

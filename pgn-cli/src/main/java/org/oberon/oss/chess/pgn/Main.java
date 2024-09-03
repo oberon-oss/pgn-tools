@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import static org.oberon.oss.chess.pgn.LogProperties.loadLoggingProperties;
+import static org.oberon.oss.chess.reader.PgnDataReader.getUnknownTags;
 
 @CommandLine.Command(
         version = "v1.0.0",
@@ -44,6 +45,7 @@ public class Main implements Callable<Integer> {
                 Processor processor = new Processor();
                 PgnDataReader.processPgnData(new FilePgnSectionProvider(canonicalFile), processor);
                 processor.logProgress(true);
+                LOGGER.info(getUnknownTags());
             }
         }
         return 0;
@@ -55,7 +57,8 @@ public class Main implements Callable<Integer> {
         @Override
         public void processGameContainer(PgnGameContainer container) {
             if (container.hasErrors()) {
-                LOGGER.warn("{}", container.getFormattedLogRecord());
+                String formattedLogRecord = container.getFormattedLogRecord();
+                LOGGER.warn("{}", formattedLogRecord);
             }
 
             index = container.getPgnSection().getIndex();

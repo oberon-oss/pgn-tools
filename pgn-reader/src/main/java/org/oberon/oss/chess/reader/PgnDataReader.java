@@ -24,8 +24,10 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.jetbrains.annotations.NotNull;
 import org.oberon.oss.chess.data.Game;
 import org.oberon.oss.chess.data.GameTermination;
-import org.oberon.oss.chess.data.Tag;
 import org.oberon.oss.chess.data.element.*;
+import org.oberon.oss.chess.data.tags.StandardTag;
+import org.oberon.oss.chess.data.tags.AbstractTag;
+import org.oberon.oss.chess.data.tags.TagType;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -43,14 +45,20 @@ import java.util.Set;
  */
 @Log4j2
 public class PgnDataReader extends PGNImportFormatBaseListener {
+    private static final Set<String> UNKNOWN_TAGS = new HashSet<>();
+
     private final PgnGameContainer.Builder       builder      = PgnGameContainer.builder();
     private final Game.Builder                   gameBuilder  = Game.builder();
     private final ErrorHandler                   errorHandler = new ErrorHandler(builder);
     private final Deque<ElementSequence.Builder> builderStack = new ArrayDeque<>();
-    private final Set<Tag>                       tagSection   = new HashSet<>();
+    private final Set<AbstractTag<?>>            tagSection   = new HashSet<>();
 
     private PgnDataReader() {
 
+    }
+
+    public static Set<String> getUnknownTags() {
+        return UNKNOWN_TAGS;
     }
 
     public static void processPgnData(@NotNull FilePgnSectionProvider provider, @NotNull PgnGameContainerProcessor processor) {
@@ -61,16 +69,18 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
 
 
     private long                    start                  = 0;
-    private Tag.Builder             tagBuilder             = Tag.builder();
+    private StandardTag.Builder     tagBuilder             = StandardTag.builder();
     private ElementSequence.Builder elementSequenceBuilder = ElementSequence.builder();
 
     private PgnGameContainer processInputData(PgnSection section) {
+        PGNImportFormatParser parser;
         try (InputStream inputStream = new ByteArrayInputStream(section.getSectionData().getBytes(section.getCharset()))) {
             builder.setPgnSection(section);
 
-            Lexer                 lexer             = new PGNImportFormatLexer(CharStreams.fromStream(inputStream));
-            CommonTokenStream     commonTokenStream = new CommonTokenStream(lexer);
-            PGNImportFormatParser parser            = new PGNImportFormatParser(commonTokenStream);
+            Lexer             lexer             = new PGNImportFormatLexer(CharStreams.fromStream(inputStream));
+            CommonTokenStream commonTokenStream = new CommonTokenStream(lexer);
+
+            parser = new PGNImportFormatParser(commonTokenStream);
 
             parser.removeErrorListeners();
             parser.addErrorListener(errorHandler);
@@ -79,9 +89,9 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
             ParseTreeWalker walker    = new ParseTreeWalker();
 
             walker.walk(this, parseTree);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             errorHandler.applicationError(e);
-            LOGGER.error("Terminated. exception encountered: {}", e.getMessage(), e);
         }
         builder.setDateTimeRead(LocalDateTime.now());
         return builder.build();
@@ -123,9 +133,23 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
         elementSequenceBuilder.element(new MoveComment(ctx.getText()));
     }
 
+
     @Override
     public void enterNag(PGNImportFormatParser.NagContext ctx) {
         elementSequenceBuilder.element(new Nag(ctx.getText()));
+    }
+
+    @Override
+    public void enterSuffix(PGNImportFormatParser.SuffixContext ctx) {
+        switch (ctx.getText()) {
+            case "!" -> elementSequenceBuilder.element(new Nag("$1"));
+            case "?" -> elementSequenceBuilder.element(new Nag("$2"));
+            case "!!" -> elementSequenceBuilder.element(new Nag("$3"));
+            case "??" -> elementSequenceBuilder.element(new Nag("$4"));
+            case "!?" -> elementSequenceBuilder.element(new Nag("$5"));
+            case "?!" -> elementSequenceBuilder.element(new Nag("$6"));
+            default -> errorHandler.unknownSuffix(ctx.getText());
+        }
     }
 
     @Override
@@ -168,16 +192,23 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
     @Override
     public void exitTagPair(PGNImportFormatParser.TagPairContext ctx) {
         tagSection.add(tagBuilder.build());
-        tagBuilder = Tag.builder();
+        tagBuilder = StandardTag.builder();
     }
 
     @Override
     public void enterTagName(PGNImportFormatParser.TagNameContext ctx) {
-        tagBuilder.tagName(ctx.getText());
+        try {
+            tagBuilder.type(TagType.getTagType(ctx.getText().trim()));
+        }
+        catch (IllegalArgumentException e) {
+            UNKNOWN_TAGS.add(ctx.getText());
+        }
+
     }
 
     @Override
     public void enterTagValue(PGNImportFormatParser.TagValueContext ctx) {
         tagBuilder.tagValue(ctx.getText());
     }
+
 }

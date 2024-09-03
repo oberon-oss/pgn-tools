@@ -34,7 +34,7 @@ public class FilePgnSectionProvider implements PgnSectionProvider {
      *
      * @param pgnFile The file to read from
      *
-     * @throws FileNotFoundException If the file specified by 'pgnFile' does not exists.
+     * @throws FileNotFoundException If the file specified by 'pgnFile' does not exist.
      * @since 1.0.0
      */
     public FilePgnSectionProvider(@NotNull File pgnFile) throws IOException {
@@ -157,7 +157,7 @@ public class FilePgnSectionProvider implements PgnSectionProvider {
                 return pgnFile.toURI().toURL();
             }
             catch (MalformedURLException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException("Unable to return the URL for the file.", e);
             }
         }
     }

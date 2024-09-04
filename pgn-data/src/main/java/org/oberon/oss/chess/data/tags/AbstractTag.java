@@ -1,6 +1,8 @@
 package org.oberon.oss.chess.data.tags;
 
+import lombok.Builder;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,20 +17,25 @@ public abstract class AbstractTag<V> {
     @Getter
     private final TagType tagType;
 
+    @Getter
+    private final V tagValue;
+
     private final String userDefinedTagName;
 
-    protected AbstractTag(@NotNull final TagType tagType) {
+    protected AbstractTag(@NotNull final TagType tagType, final @NotNull V tagValue) {
         this.tagType       = tagType;
+        this.tagValue = tagValue;
         userDefinedTagName = null;
     }
 
-    protected AbstractTag(@NotNull String tagName) {
+    protected AbstractTag(@NotNull String tagName,  final @NotNull V tagValue) {
         tagType = TagType.getTagType(tagName);
         if (tagType == TagType.USER_DEFINED_TAG) {
             userDefinedTagName = tagName;
         } else {
             userDefinedTagName = null;
         }
+        this.tagValue = tagValue;
     }
 
     public @Nullable String getUserDefinedTagName() {
@@ -37,6 +44,4 @@ public abstract class AbstractTag<V> {
         }
         return null;
     }
-
-    public abstract V getTagValue();
 }

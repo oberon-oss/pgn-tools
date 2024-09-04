@@ -25,8 +25,8 @@ import org.jetbrains.annotations.NotNull;
 import org.oberon.oss.chess.data.Game;
 import org.oberon.oss.chess.data.GameTermination;
 import org.oberon.oss.chess.data.element.*;
-import org.oberon.oss.chess.data.tags.StandardTag;
 import org.oberon.oss.chess.data.tags.AbstractTag;
+import org.oberon.oss.chess.data.tags.TagBuilder;
 import org.oberon.oss.chess.data.tags.TagType;
 
 import java.io.ByteArrayInputStream;
@@ -69,7 +69,7 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
 
 
     private long                    start                  = 0;
-    private StandardTag.Builder     tagBuilder             = StandardTag.builder();
+    private TagBuilder<Object>      tagBuilder             = new TagBuilder<>();
     private ElementSequence.Builder elementSequenceBuilder = ElementSequence.builder();
 
     private PgnGameContainer processInputData(PgnSection section) {
@@ -89,8 +89,7 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
             ParseTreeWalker walker    = new ParseTreeWalker();
 
             walker.walk(this, parseTree);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             errorHandler.applicationError(e);
         }
         builder.setDateTimeRead(LocalDateTime.now());
@@ -192,23 +191,17 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
     @Override
     public void exitTagPair(PGNImportFormatParser.TagPairContext ctx) {
         tagSection.add(tagBuilder.build());
-        tagBuilder = StandardTag.builder();
+        tagBuilder = new TagBuilder<>();
     }
 
     @Override
     public void enterTagName(PGNImportFormatParser.TagNameContext ctx) {
-        try {
-            tagBuilder.type(TagType.getTagType(ctx.getText().trim()));
-        }
-        catch (IllegalArgumentException e) {
-            UNKNOWN_TAGS.add(ctx.getText());
-        }
-
+        tagBuilder.setTagType(TagType.getTagType(ctx.getText().trim()));
     }
 
     @Override
     public void enterTagValue(PGNImportFormatParser.TagValueContext ctx) {
-        tagBuilder.tagValue(ctx.getText());
+        tagBuilder.setValue(ctx.getText());
     }
 
 }

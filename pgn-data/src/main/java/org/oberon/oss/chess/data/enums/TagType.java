@@ -1,5 +1,6 @@
-package org.oberon.oss.chess.data.tags;
+package org.oberon.oss.chess.data.enums;
 
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -9,24 +10,27 @@ import java.util.Map;
  * @author Fabien H. Dumay
  */
 public enum TagType {
-    EVENT,
+    // Seven tag roster tags
+    EVENT(true),
+    SITE(true),
+    DATE(true),
+    ROUND(true),
+    WHITE(true),
+    BLACK(true),
+    RESULT(true),
+    // well known or defined tag
     EVENT_DATE("EventDate"),
     EVENT_SPONSOR("EventSponsor"),
     SECTION("Section"),
     STAGE("Stage"),
     BOARD("Board"),
-    SITE,
-    DATE,
     TIME("Time"),
     UTC_DATE("UTCDate"),
     UTC_TIME("UTCTime"),
-    ROUND,
-    WHITE,
     WHITE_ELO("WhiteElo"),
     WHITE_USCF("WhiteUSCF"),
     WHITE_NA("WhiteNA"),
     WHITE_TYPE("WhiteType"),
-    BLACK,
     BLACK_ELO("BlackElo"),
     WHITE_TITLE("WhiteTitle"),
     BLACK_TITLE("BlackTitle"),
@@ -34,7 +38,6 @@ public enum TagType {
     BLACK_NA("BlackNA"),
     BLACK_TYPE("BlackType"),
     TIME_CONTROL("TimeControl"),
-    RESULT,
     TERMINATION("Termination"),
     SETUP("SetUp"),
     FEN,
@@ -46,15 +49,29 @@ public enum TagType {
     ANNOTATOR("Annotator"),
     MODE("Mode"),
     PLY_COUNT("PlyCount"),
+    // Tag definition for tags currently unknown or not yet supported6
     USER_DEFINED_TAG("*");
 
-    private final String lookupName;
+    private final String  lookupName;
+
+    @Getter
+    private final boolean required;
 
     TagType() {
-        lookupName = name().toUpperCase();
+        this(false);
     }
 
     TagType(String lookupName) {
+        this(lookupName, false);
+    }
+
+    TagType(boolean required) {
+        this.required   = required;
+        this.lookupName = name().toUpperCase();
+    }
+
+    TagType(String lookupName, boolean required) {
+        this.required   = required;
         this.lookupName = lookupName.toUpperCase();
     }
 

@@ -25,9 +25,8 @@ import org.jetbrains.annotations.NotNull;
 import org.oberon.oss.chess.data.Game;
 import org.oberon.oss.chess.data.GameTermination;
 import org.oberon.oss.chess.data.element.*;
-import org.oberon.oss.chess.data.tags.AbstractTag;
-import org.oberon.oss.chess.data.tags.TagBuilder;
-import org.oberon.oss.chess.data.tags.TagType;
+import org.oberon.oss.chess.data.tags.defs.AbstractTag;
+import org.oberon.oss.chess.data.tags.defs.TagBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -185,7 +184,7 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
 
     @Override
     public void exitTagSection(PGNImportFormatParser.TagSectionContext ctx) {
-        gameBuilder.tagSection(tagSection);
+//        gameBuilder.tagSection(tagSection);
     }
 
     @Override
@@ -196,7 +195,7 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
 
     @Override
     public void enterTagName(PGNImportFormatParser.TagNameContext ctx) {
-        tagBuilder.setTagType(TagType.getTagType(ctx.getText().trim()));
+        tagBuilder.setTagType(ctx.getText().trim());
     }
 
     @Override

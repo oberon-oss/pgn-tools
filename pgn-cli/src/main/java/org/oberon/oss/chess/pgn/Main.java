@@ -1,6 +1,7 @@
 package org.oberon.oss.chess.pgn;
 
 import lombok.extern.log4j.Log4j2;
+import org.oberon.oss.chess.data.board.FENDefinedPosition;
 import org.oberon.oss.chess.reader.FilePgnSectionProvider;
 import org.oberon.oss.chess.reader.PgnDataReader;
 import org.oberon.oss.chess.reader.PgnGameContainer;
@@ -42,6 +43,7 @@ public class Main implements Callable<Integer> {
             File canonicalFile = file.getCanonicalFile();
             LOGGER.info("Processing file: {}; file {}", canonicalFile, (file.exists() ? "exists" : "not found"));
             if (file.exists()) {
+                new FENDefinedPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w QKqk - 0 0");
                 Processor processor = new Processor();
                 PgnDataReader.processPgnData(new FilePgnSectionProvider(canonicalFile), processor);
                 processor.logProgress(true);

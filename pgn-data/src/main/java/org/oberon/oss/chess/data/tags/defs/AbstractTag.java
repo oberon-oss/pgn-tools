@@ -1,11 +1,10 @@
-package org.oberon.oss.chess.data.tags;
+package org.oberon.oss.chess.data.tags.defs;
 
-import lombok.Builder;
 import lombok.Getter;
-import lombok.experimental.SuperBuilder;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.oberon.oss.chess.data.enums.TagType;
 
 /**
  * @param <V> Type class of the data contained by the element.
@@ -13,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
  * @author Fabien H. Dumay
  */
 @Log4j2
-public abstract class AbstractTag<V> {
+public abstract class AbstractTag<V> implements TagValueFromString<V> {
     @Getter
     private final TagType tagType;
 

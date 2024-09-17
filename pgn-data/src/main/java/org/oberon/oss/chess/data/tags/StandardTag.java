@@ -1,16 +1,21 @@
 package org.oberon.oss.chess.data.tags;
 
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
-import lombok.experimental.SuperBuilder;
 import org.jetbrains.annotations.NotNull;
+import org.oberon.oss.chess.data.enums.TagType;
+import org.oberon.oss.chess.data.tags.defs.AbstractTag;
 
 @Getter
 @ToString
 public class StandardTag extends AbstractTag<String> {
-    protected StandardTag(final @NotNull TagType tagType, final @NotNull String tagValue) {
+    public StandardTag(final @NotNull TagType tagType, final @NotNull String tagValue) {
         super(tagType, tagValue);
+    }
+
+    @Override
+    public String fromString(String tagValue) {
+        return tagValue;
     }
 }

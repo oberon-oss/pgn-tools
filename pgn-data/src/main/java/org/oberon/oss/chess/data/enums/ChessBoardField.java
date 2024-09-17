@@ -41,7 +41,7 @@ public enum ChessBoardField {
         public ChessBoardField next() {
             if (index + 1 == fields.length) throw new NoSuchElementException();
             ++index;
-            LOGGER.info("Current field: {}", fields[index]);
+            LOGGER.trace("Current field: {}", fields[index]);
             return fields[index];
         }
 

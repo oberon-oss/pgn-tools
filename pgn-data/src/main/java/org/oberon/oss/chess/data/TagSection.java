@@ -32,10 +32,11 @@ public class TagSection implements Iterable<AbstractTag<?>> {
         return found.containsAll(SEVEN_TAG_ROSTER);
     }
 
-    public @Nullable AbstractTag<?> lookupTag(@NotNull TagType type) {
+    public @Nullable AbstractTag<Object> lookupTag(@NotNull TagType type) {
         for (AbstractTag<?> tag : tags) {
             if (tag.getTagType().equals(type)) {
-                return tag;
+                //noinspection unchecked
+                return (AbstractTag<Object>) tag;
             }
         }
         return null;

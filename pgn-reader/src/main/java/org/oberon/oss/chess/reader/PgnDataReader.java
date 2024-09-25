@@ -23,8 +23,12 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.jetbrains.annotations.NotNull;
 import org.oberon.oss.chess.data.Game;
+import org.oberon.oss.chess.data.Game.GameBuilder;
 import org.oberon.oss.chess.data.GameTermination;
+import org.oberon.oss.chess.data.TagSection;
+import org.oberon.oss.chess.data.TagSection.TagSectionBuilder;
 import org.oberon.oss.chess.data.element.*;
+import org.oberon.oss.chess.data.element.ElementSequence.ElementSequenceBuilder;
 import org.oberon.oss.chess.data.tags.defs.AbstractTag;
 import org.oberon.oss.chess.data.tags.defs.TagBuilder;
 
@@ -46,11 +50,10 @@ import java.util.Set;
 public class PgnDataReader extends PGNImportFormatBaseListener {
     private static final Set<String> UNKNOWN_TAGS = new HashSet<>();
 
-    private final PgnGameContainer.Builder       builder      = PgnGameContainer.builder();
-    private final Game.Builder                   gameBuilder  = Game.builder();
-    private final ErrorHandler                   errorHandler = new ErrorHandler(builder);
-    private final Deque<ElementSequence.Builder> builderStack = new ArrayDeque<>();
-    private final Set<AbstractTag<?>>            tagSection   = new HashSet<>();
+    private final PgnGameContainer.Builder      builder      = PgnGameContainer.builder();
+    private final GameBuilder                   gameBuilder  = Game.builder();
+    private final ErrorHandler                  errorHandler = new ErrorHandler(builder);
+    private final Deque<ElementSequenceBuilder> builderStack = new ArrayDeque<>();
 
     private PgnDataReader() {
 
@@ -66,10 +69,10 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
         }
     }
 
-
-    private long                    start                  = 0;
-    private TagBuilder<Object>      tagBuilder             = new TagBuilder<>();
-    private ElementSequence.Builder elementSequenceBuilder = ElementSequence.builder();
+    private final TagSectionBuilder                    tagSectionBuilder      = TagSection.builder();
+    private       long                                 start                  = 0;
+    private       TagBuilder<? extends AbstractTag<?>> tagBuilder             = new TagBuilder<>();
+    private       ElementSequenceBuilder               elementSequenceBuilder = ElementSequence.builder();
 
     private PgnGameContainer processInputData(PgnSection section) {
         PGNImportFormatParser parser;
@@ -88,7 +91,8 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
             ParseTreeWalker walker    = new ParseTreeWalker();
 
             walker.walk(this, parseTree);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             errorHandler.applicationError(e);
         }
         builder.setDateTimeRead(LocalDateTime.now());
@@ -111,7 +115,7 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
     @Override
     public void exitRecursiveVariation(PGNImportFormatParser.RecursiveVariationContext ctx) {
         LOGGER.debug("Leaving recursive variation at depth {}", builderStack.size());
-        ElementSequence.Builder oldBuilder = builderStack.pop();
+        ElementSequenceBuilder oldBuilder = builderStack.pop();
         oldBuilder.element(elementSequenceBuilder.build());
         elementSequenceBuilder = oldBuilder;
     }
@@ -184,12 +188,12 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
 
     @Override
     public void exitTagSection(PGNImportFormatParser.TagSectionContext ctx) {
-//        gameBuilder.tagSection(tagSection);
+        gameBuilder.tagSection(tagSectionBuilder.build());
     }
 
     @Override
     public void exitTagPair(PGNImportFormatParser.TagPairContext ctx) {
-        tagSection.add(tagBuilder.build());
+        tagSectionBuilder.tag(tagBuilder.build());
         tagBuilder = new TagBuilder<>();
     }
 

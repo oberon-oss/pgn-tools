@@ -1,6 +1,7 @@
 package org.oberon.oss.chess.data.enums;
 
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +15,7 @@ public enum ChessPiece {
     QUEEN("Q", "q"),
     ROOK("R", "r"),
     BISHOP("B", "b"),
-    KNIGHT("K", "k"),
+    KNIGHT("N", "n"),
     PAWN("P", "p");
 
     private final String forWhite;
@@ -25,9 +26,10 @@ public enum ChessPiece {
         this.forBlack = forBlack;
     }
 
-    private static final Map<String,ChessPiece> LOOKUP_MAP;
+    private static final Map<String, ChessPiece> LOOKUP_MAP;
+
     static {
-        Map<String,ChessPiece> map = new HashMap<>();
+        Map<String, ChessPiece> map = new HashMap<>();
         for (ChessPiece value : ChessPiece.values()) {
             map.put(value.forWhite, value);
             map.put(value.forBlack, value);
@@ -35,7 +37,7 @@ public enum ChessPiece {
         LOOKUP_MAP = Map.copyOf(map);
     }
 
-    public static ChessPiece lookup(String fenType) {
+    public static @Nullable ChessPiece lookup(String fenType) {
         return LOOKUP_MAP.get(fenType);
     }
 }

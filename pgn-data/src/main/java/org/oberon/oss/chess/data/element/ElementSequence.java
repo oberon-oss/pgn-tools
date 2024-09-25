@@ -20,6 +20,6 @@ public class ElementSequence implements Element<List<Element<?>>> {
 
     @Override
     public List<Element<?>> getElementData() {
-        return List.copyOf(elements);
+        return elements;
     }
 }

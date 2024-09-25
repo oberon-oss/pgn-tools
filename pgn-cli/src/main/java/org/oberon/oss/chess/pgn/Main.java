@@ -1,7 +1,9 @@
 package org.oberon.oss.chess.pgn;
 
 import lombok.extern.log4j.Log4j2;
-import org.oberon.oss.chess.data.board.FENDefinedPosition;
+import org.oberon.oss.chess.data.fen.FENPosition;
+import org.oberon.oss.chess.data.fen.FENPositionTranslator;
+import org.oberon.oss.chess.data.fen.FENPositionTranslatorImpl;
 import org.oberon.oss.chess.reader.FilePgnSectionProvider;
 import org.oberon.oss.chess.reader.PgnDataReader;
 import org.oberon.oss.chess.reader.PgnGameContainer;
@@ -16,16 +18,16 @@ import static org.oberon.oss.chess.pgn.LogProperties.loadLoggingProperties;
 import static org.oberon.oss.chess.reader.PgnDataReader.getUnknownTags;
 
 @CommandLine.Command(
-        version = "v1.0.0",
-        description = "Allows processing of PGN data in files and/or archives."
+      version = "v1.0.0",
+      description = "Allows processing of PGN data in files and/or archives."
 )
 @Log4j2
 public class Main implements Callable<Integer> {
 
     @CommandLine.Option(
-            names = {"-f", "--files"},
-            required = true,
-            arity = "1.."
+          names = {"-f", "--files"},
+          required = true,
+          arity = "1.."
 
     )
     private List<File> files;
@@ -35,6 +37,8 @@ public class Main implements Callable<Integer> {
         new CommandLine(Main.class).execute(args);
     }
 
+    private static final String FEN_STRING = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w QKqk - 0 0";
+
     @Override
     public Integer call() throws Exception {
         loadLoggingProperties();
@@ -43,7 +47,12 @@ public class Main implements Callable<Integer> {
             File canonicalFile = file.getCanonicalFile();
             LOGGER.info("Processing file: {}; file {}", canonicalFile, (file.exists() ? "exists" : "not found"));
             if (file.exists()) {
-                new FENDefinedPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w QKqk - 0 0");
+                FENPositionTranslator translator = new FENPositionTranslatorImpl();
+                FENPosition           position1  = translator.toFENPosition(FEN_STRING);
+                FENPosition           position2  = translator.toFENPosition(translator.toFENString(position1));
+                if (position1.equals(position2)) {
+                    LOGGER.info("Matched !");
+                }
                 Processor processor = new Processor();
                 PgnDataReader.processPgnData(new FilePgnSectionProvider(canonicalFile), processor);
                 processor.logProgress(true);

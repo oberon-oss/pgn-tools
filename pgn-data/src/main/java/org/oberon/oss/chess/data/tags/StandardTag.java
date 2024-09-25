@@ -14,8 +14,4 @@ public class StandardTag extends AbstractTag<String> {
         super(tagType, tagValue);
     }
 
-    @Override
-    public String fromString(String tagValue) {
-        return tagValue;
-    }
 }

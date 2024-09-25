@@ -2,14 +2,14 @@ package org.oberon.oss.chess.data.fen;
 
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
+import org.oberon.oss.chess.data.ChessFieldInformation;
+import org.oberon.oss.chess.data.ChessFieldIterator;
+import org.oberon.oss.chess.data.FieldIterator;
 import org.oberon.oss.chess.data.Piece;
-import org.oberon.oss.chess.data.enums.ChessFieldIterator;
+import org.oberon.oss.chess.data.enums.*;
 import org.oberon.oss.chess.data.fen.FENPositionImpl.FENPositionBuilder;
-import org.oberon.oss.chess.data.enums.ChessField;
-import org.oberon.oss.chess.data.enums.ChessPiece;
-import org.oberon.oss.chess.data.enums.Color;
 
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,7 +26,7 @@ import static org.oberon.oss.chess.data.enums.Color.WHITE;
  * @since 1.0.0
  */
 @Log4j2
-public class FENPositionTranslatorImpl implements FENPositionTranslator {
+public class FENPositionTranslatorImpl implements FENPositionTranslator<ChessFieldInformation> {
     protected static final Pattern DIGIT_PATTERN = Pattern.compile("\\d");
     protected static final Pattern FEN_PATTERN   = Pattern.compile(
           "((?:[kqrbnpKQRBNP1-8]{1,8}/?){8})" // group 1: position
@@ -38,7 +38,7 @@ public class FENPositionTranslatorImpl implements FENPositionTranslator {
     );
 
     @Override
-    public FENPosition toFENPosition(@NotNull String fenPositionSetupString) {
+    public FENPosition<ChessFieldInformation> toFENPosition(@NotNull String fenPositionSetupString) {
         FENPositionBuilder positionBuilder = FENPositionImpl.builder();
 
         Matcher wrk = FEN_PATTERN.matcher(fenPositionSetupString);
@@ -46,7 +46,7 @@ public class FENPositionTranslatorImpl implements FENPositionTranslator {
             throw new FENTranslatorException("Invalid setup string: " + fenPositionSetupString);
         }
 
-        Map<ChessField, Piece> position = Map.copyOf(extract(wrk.group(1)));
+        Map<ChessFieldInformation, Piece> position = Map.copyOf(extract(wrk.group(1)));
         positionBuilder.board(position)
                        .sideToMove(wrk.group(2).contentEquals("b") ? Color.BLACK : WHITE)
                        .enPassantField(setEnPassantField(position, wrk.group(4)))
@@ -58,7 +58,7 @@ public class FENPositionTranslatorImpl implements FENPositionTranslator {
     }
 
     @Override
-    public String toFENString(@NotNull FENPosition position) {
+    public String toFENString(@NotNull FENPosition<ChessFieldInformation> position) {
         StringBuilder sb = new StringBuilder();
         convertPositionToString(position.board(), sb);
 
@@ -80,7 +80,7 @@ public class FENPositionTranslatorImpl implements FENPositionTranslator {
         return sb.toString();
     }
 
-    private void checkCastlingRights(Map<ChessField, Piece> position, String castlingRights, FENPositionBuilder positionBuilder) {
+    private void checkCastlingRights(Map<ChessFieldInformation, Piece> position, String castlingRights, FENPositionBuilder positionBuilder) {
         if (!castlingRights.contentEquals("-")) {
             for (int i = 0; i < castlingRights.length(); i++) {
                 char c = castlingRights.charAt(i);
@@ -112,7 +112,7 @@ public class FENPositionTranslatorImpl implements FENPositionTranslator {
         }
     }
 
-    private void verifyIfFieldContains(Map<ChessField, Piece> position, ChessField field, ChessPiece piece, Color color) {
+    private void verifyIfFieldContains(Map<ChessFieldInformation, Piece> position, ChessField field, ChessPiece piece, Color color) {
         ChessPiece chessPiece = position.get(field).getChessPiece();
         Color      pieceColor = position.get(field).getPieceColor();
         if (chessPiece != piece && pieceColor != color) {
@@ -120,7 +120,7 @@ public class FENPositionTranslatorImpl implements FENPositionTranslator {
         }
     }
 
-    private ChessField setEnPassantField(Map<ChessField, Piece> position, String enPassantField) {
+    private ChessField setEnPassantField(Map<ChessFieldInformation, Piece> position, String enPassantField) {
         if (enPassantField.contentEquals("-")) {
             return null;
         }
@@ -129,13 +129,14 @@ public class FENPositionTranslatorImpl implements FENPositionTranslator {
         return field;
     }
 
-    private Map<ChessField, Piece> extract(String positionString) {
-        ChessField.ChessBoardFieldIterator iterator     = ChessField.iterator();
-        ChessField                         currentField = ChessField.A8;
-        Map<ChessField, Piece>             wrk          = new EnumMap<>(ChessField.class);
+    private Map<ChessFieldInformation, Piece> extract(String positionString) {
+        FieldIterator<ChessFieldInformation> iterator = ChessFieldIterator.chessBoardFieldIterator();
+        Map<ChessFieldInformation, Piece>    wrk      = new HashMap<>();
 
+        ChessFieldInformation currentField;
         for (String rank : positionString.split("/")) {
             for (int i = 0; i < rank.length(); i++) {
+                currentField = iterator.next();
                 String  content = rank.substring(i, i + 1);
                 Matcher m       = DIGIT_PATTERN.matcher(content);
                 if (m.matches()) {
@@ -154,25 +155,22 @@ public class FENPositionTranslatorImpl implements FENPositionTranslator {
                     wrk.put(currentField, new Piece(chessPiece, color));
                     LOGGER.debug("Processing piece {} @ {}", content, currentField);
                 }
-                if (iterator.hasNext()) {
-                    currentField = iterator.next();
-                }
             }
         }
         return wrk;
     }
 
-    private void convertPositionToString(Map<ChessField, Piece> position, StringBuilder sb) {
+    private void convertPositionToString(Map<ChessFieldInformation, Piece> position, StringBuilder sb) {
         for (int rank = 8; rank >= 1; rank--) {
-            int                fieldsToSkip = 0;
-            ChessFieldIterator iterator     = new ChessFieldIterator(rank);
+            int                                  emptyFieldsCount = 0;
+            FieldIterator<ChessFieldInformation> iterator         = ChessFieldIterator.rankIterator(rank);
             while (iterator.hasNext()) {
-                ChessField field = iterator.next();
-                Piece      piece = position.get(field);
-                fieldsToSkip = appendData(sb, piece, fieldsToSkip);
+                ChessFieldInformation field = iterator.next();
+                Piece                 piece = position.get(field);
+                emptyFieldsCount = appendData(sb, piece, emptyFieldsCount);
             }
-            if (fieldsToSkip > 0) {
-                sb.append(fieldsToSkip);
+            if (emptyFieldsCount > 0) {
+                sb.append(emptyFieldsCount);
             }
             if (rank > 1) {
                 sb.append("/");

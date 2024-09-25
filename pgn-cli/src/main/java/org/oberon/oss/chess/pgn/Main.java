@@ -1,6 +1,7 @@
 package org.oberon.oss.chess.pgn;
 
 import lombok.extern.log4j.Log4j2;
+import org.oberon.oss.chess.data.ChessFieldInformation;
 import org.oberon.oss.chess.data.fen.FENPosition;
 import org.oberon.oss.chess.data.fen.FENPositionTranslator;
 import org.oberon.oss.chess.data.fen.FENPositionTranslatorImpl;
@@ -47,9 +48,10 @@ public class Main implements Callable<Integer> {
             File canonicalFile = file.getCanonicalFile();
             LOGGER.info("Processing file: {}; file {}", canonicalFile, (file.exists() ? "exists" : "not found"));
             if (file.exists()) {
-                FENPositionTranslator translator = new FENPositionTranslatorImpl();
-                FENPosition           position1  = translator.toFENPosition(FEN_STRING);
-                FENPosition           position2  = translator.toFENPosition(translator.toFENString(position1));
+                FENPositionTranslator<ChessFieldInformation> translator = new FENPositionTranslatorImpl();
+                FENPosition<ChessFieldInformation>           position1  = translator.toFENPosition(FEN_STRING);
+                FENPosition<ChessFieldInformation>           position2  =
+                      translator.toFENPosition(translator.toFENString(position1));
                 if (position1.equals(position2)) {
                     LOGGER.info("Matched !");
                 }

@@ -1,6 +1,7 @@
 package org.oberon.oss.chess.data.fen;
 
 import org.jetbrains.annotations.NotNull;
+import org.oberon.oss.chess.data.ChessFieldInformation;
 
 /**
  * Provides services to create a {@link FENPosition} object from a setup string, or vice versa.
@@ -8,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Fabien H. Dumay
  * @since 1.0.0
  */
-public interface FENPositionTranslator {
+public interface FENPositionTranslator<F extends ChessFieldInformation> {
     /**
      * Constructs a {@link FENPosition} object from the provided setup string.
      *
@@ -19,7 +20,7 @@ public interface FENPositionTranslator {
      * @throws FENTranslatorException if an error is detected while processing the setup string.
      * @since 1.0.0
      */
-    FENPosition toFENPosition(@NotNull String fenPositionSetupString);
+    FENPosition<F> toFENPosition(@NotNull String fenPositionSetupString);
 
     /**
      * Converts the provided position into the equivalent FEN string representation.
@@ -30,5 +31,5 @@ public interface FENPositionTranslator {
      *
      * @since 1.0.0
      */
-    String toFENString(@NotNull FENPosition position);
+    String toFENString(@NotNull FENPosition<F> position);
 }

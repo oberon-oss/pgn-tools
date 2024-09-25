@@ -3,6 +3,7 @@ package org.oberon.oss.chess.data.fen;
 import org.jetbrains.annotations.Nullable;
 import org.oberon.oss.chess.data.Piece;
 import org.oberon.oss.chess.data.enums.ChessField;
+import org.oberon.oss.chess.data.ChessFieldInformation;
 import org.oberon.oss.chess.data.enums.Color;
 
 import java.util.Map;
@@ -13,7 +14,7 @@ import java.util.Map;
  * @author Fabien H. Dumay
  * @since 1.0.0
  */
-public interface FENPosition {
+public interface FENPosition<F extends ChessFieldInformation> {
     /**
      * Returns a map of the fields occupied by pieces defined in the FEN position.
      *
@@ -21,7 +22,7 @@ public interface FENPosition {
      *
      * @since 1.0.0
      */
-    Map<ChessField, Piece> board();
+    Map<F, Piece> board();
 
     /**
      * Returns the color that is to make the next moved.

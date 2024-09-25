@@ -4,19 +4,26 @@ import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
+import org.oberon.oss.chess.data.ChessFieldInformation;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.oberon.oss.chess.data.enums.Color.BLACK;
 import static org.oberon.oss.chess.data.enums.Color.WHITE;
 
 /**
+ * Enumerates the fields present on a chess board.
+ *
  * @author Fabien H. Dumay
+ * @since 1.0.0
  */
 @ToString
 @Getter
 @Log4j2
-public enum ChessField {
+public enum ChessField implements ChessFieldInformation {
     A8(WHITE), B8(BLACK), C8(WHITE), D8(BLACK), E8(WHITE), F8(BLACK), G8(WHITE), H8(BLACK),
     A7(BLACK), B7(WHITE), C7(BLACK), D7(WHITE), E7(BLACK), F7(WHITE), G7(BLACK), H7(WHITE),
     A6(WHITE), B6(BLACK), C6(WHITE), D6(BLACK), E6(WHITE), F6(BLACK), G6(WHITE), H6(BLACK),
@@ -28,7 +35,7 @@ public enum ChessField {
 
     private final Color  fieldColor;
     private final String file;
-    private final int    rank;
+    private final Integer    rank;
 
     ChessField(Color fieldColor) {
         this.fieldColor = fieldColor;
@@ -43,8 +50,8 @@ public enum ChessField {
         Map<Integer, List<ChessField>> rankMap = new HashMap<>();
         Map<String, List<ChessField>>  fileMap = new HashMap<>();
         for (ChessField chessField : ChessField.values()) {
-            rankMap.computeIfAbsent(chessField.rank, k -> new ArrayList<>());
-            fileMap.computeIfAbsent(chessField.file, k -> new ArrayList<>());
+            rankMap.computeIfAbsent(chessField.rank, r -> new ArrayList<>());
+            fileMap.computeIfAbsent(chessField.file, f -> new ArrayList<>());
 
             rankMap.get(chessField.rank).add(chessField);
             fileMap.get(chessField.file).add(chessField);
@@ -70,37 +77,9 @@ public enum ChessField {
         return FILE_LOOKUP.get(file);
     }
 
-    public static @NotNull ChessBoardFieldIterator iterator() {
-        return new ChessBoardFieldIterator();
-    }
-
     @SuppressWarnings("unused")
     public static ChessField getFieldByCoordinates(String file, int rank) {
         return ChessField.valueOf(file.toUpperCase() + rank);
     }
 
-    public static class ChessBoardFieldIterator implements Iterator<ChessField> {
-        private final ChessField[] fields = ChessField.values();
-        private       int          index  = 0;
-
-        @Override
-        public boolean hasNext() {
-            return index + 1 < fields.length;
-        }
-
-        @Override
-        public ChessField next() {
-            if (index + 1 == fields.length) throw new NoSuchElementException();
-            ++index;
-            LOGGER.trace("Current field: {}", fields[index]);
-            return fields[index];
-        }
-
-        public void skipFields(int skipCount) {
-            if (skipCount < 2 || skipCount + index >= fields.length) {
-                throw new IllegalArgumentException("Invalid skip count: " + skipCount);
-            }
-            index += skipCount - 1;
-        }
-    }
 }

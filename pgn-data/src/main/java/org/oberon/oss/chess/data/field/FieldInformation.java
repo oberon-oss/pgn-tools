@@ -1,7 +1,7 @@
-package org.oberon.oss.chess.data;
+package org.oberon.oss.chess.data.field;
 
 import org.jetbrains.annotations.NotNull;
-import org.oberon.oss.chess.data.enums.Color;
+import org.oberon.oss.chess.data.ChessColor;
 
 /**
  * Interface describing the contract for classes that provide information on fields on a chess board.
@@ -9,13 +9,13 @@ import org.oberon.oss.chess.data.enums.Color;
  * @author Fabien H. Dumay
  * @since 1.0.0
  */
-public interface ChessFieldInformation {
+public interface FieldInformation {
     /**
      * Returns the color of the field.
      *
-     * @return a value from the {@link Color} enumeration specifying the color of the field
+     * @return a value from the {@link ChessColor} enumeration specifying the color of the field
      */
-    Color getFieldColor();
+    ChessColor getFieldColor();
 
     /**
      * Returns the file of the field.

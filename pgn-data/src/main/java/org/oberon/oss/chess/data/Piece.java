@@ -3,8 +3,6 @@ package org.oberon.oss.chess.data;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
-import org.oberon.oss.chess.data.enums.ChessPiece;
-import org.oberon.oss.chess.data.enums.Color;
 
 import java.util.Objects;
 
@@ -16,7 +14,7 @@ import java.util.Objects;
 @AllArgsConstructor
 public class Piece {
     private final ChessPiece chessPiece;
-    private final Color      pieceColor;
+    private final ChessColor pieceColor;
 
     @Override
     public boolean equals(Object o) {

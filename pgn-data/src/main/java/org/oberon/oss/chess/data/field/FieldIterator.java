@@ -1,4 +1,4 @@
-package org.oberon.oss.chess.data;
+package org.oberon.oss.chess.data.field;
 
 import java.util.Iterator;
 
@@ -8,7 +8,7 @@ import java.util.Iterator;
  * @author Fabien H. Dumay
  * @since 1.0.0
  */
-public interface FieldIterator<F extends ChessFieldInformation> extends Iterator<F> {
+public interface FieldIterator<F extends FieldInformation> extends Iterator<F> {
 
     /**
      * Default implementation, throws a {@link UnsupportedOperationException}. Implementing classes should override this method if a

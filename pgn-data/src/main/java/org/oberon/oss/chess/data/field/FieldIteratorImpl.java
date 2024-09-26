@@ -1,8 +1,7 @@
-package org.oberon.oss.chess.data;
+package org.oberon.oss.chess.data.field;
 
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
-import org.oberon.oss.chess.data.enums.ChessField;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,19 +11,19 @@ import java.util.NoSuchElementException;
  * @author Fabien H. Dumay
  */
 @Log4j2
-public class ChessFieldIterator implements FieldIterator<ChessFieldInformation> {
+public class FieldIteratorImpl implements FieldIterator<FieldInformation> {
     private final List<ChessField> fields;
     private       int              index = 0;
 
-    private ChessFieldIterator() {
+    private FieldIteratorImpl() {
         fields = new ArrayList<>(List.of(ChessField.values()));
     }
 
-    private ChessFieldIterator(int rank) {
+    private FieldIteratorImpl(int rank) {
         fields = ChessField.getRankFields(rank);
     }
 
-    private ChessFieldIterator(String file) {
+    private FieldIteratorImpl(String file) {
         fields = ChessField.getFileFields(file);
     }
 
@@ -34,7 +33,7 @@ public class ChessFieldIterator implements FieldIterator<ChessFieldInformation> 
     }
 
     @Override
-    public ChessFieldInformation next() {
+    public FieldInformation next() {
         if (index == fields.size()) throw new NoSuchElementException();
         LOGGER.trace("Current field: {}", fields.get(index));
         return fields.get(index++);
@@ -48,16 +47,16 @@ public class ChessFieldIterator implements FieldIterator<ChessFieldInformation> 
         index += skipCount - 1;
     }
 
-    public static @NotNull FieldIterator<ChessFieldInformation> chessBoardFieldIterator() {
-        return new ChessFieldIterator();
+    public static @NotNull FieldIterator<FieldInformation> chessBoardFieldIterator() {
+        return new FieldIteratorImpl();
     }
 
-    public static @NotNull FieldIterator<ChessFieldInformation> rankIterator(@NotNull Integer rank) {
-        return new ChessFieldIterator(rank);
+    public static @NotNull FieldIterator<FieldInformation> rankIterator(@NotNull Integer rank) {
+        return new FieldIteratorImpl(rank);
     }
 
-    public static @NotNull FieldIterator<ChessFieldInformation> fileIterator(@NotNull String file) {
-        return new ChessFieldIterator(file);
+    public static @NotNull FieldIterator<FieldInformation> fileIterator(@NotNull String file) {
+        return new FieldIteratorImpl(file);
     }
 
 }

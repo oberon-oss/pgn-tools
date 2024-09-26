@@ -1,7 +1,7 @@
 package org.oberon.oss.chess.data.fen;
 
 import org.jetbrains.annotations.NotNull;
-import org.oberon.oss.chess.data.ChessFieldInformation;
+import org.oberon.oss.chess.data.field.FieldInformation;
 
 /**
  * Provides services to create a {@link FENPosition} object from a setup string, or vice versa.
@@ -9,7 +9,7 @@ import org.oberon.oss.chess.data.ChessFieldInformation;
  * @author Fabien H. Dumay
  * @since 1.0.0
  */
-public interface FENPositionTranslator<F extends ChessFieldInformation> {
+public interface FENPositionTranslator<F extends FieldInformation> {
     /**
      * Constructs a {@link FENPosition} object from the provided setup string.
      *

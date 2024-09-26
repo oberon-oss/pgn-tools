@@ -1,17 +1,16 @@
-package org.oberon.oss.chess.data;
+package org.oberon.oss.chess.data.tags;
 
 import lombok.Builder;
 import lombok.Singular;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.oberon.oss.chess.data.enums.TagType;
 import org.oberon.oss.chess.data.tags.defs.AbstractTag;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import static org.oberon.oss.chess.data.enums.TagType.*;
+import static org.oberon.oss.chess.data.tags.TagType.*;
 
 /**
  * @author Fabien H. Dumay

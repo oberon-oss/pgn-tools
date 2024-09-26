@@ -1,23 +1,31 @@
 package org.oberon.oss.chess.data.fen;
 
+import lombok.EqualsAndHashCode;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
-import org.oberon.oss.chess.data.ChessFieldInformation;
-import org.oberon.oss.chess.data.ChessFieldIterator;
-import org.oberon.oss.chess.data.FieldIterator;
-import org.oberon.oss.chess.data.Piece;
-import org.oberon.oss.chess.data.enums.*;
+import org.oberon.oss.chess.data.*;
+import org.oberon.oss.chess.data.board.BoardImpl;
+import org.oberon.oss.chess.data.board.BoardImpl.ChessBoardBuilder;
+import org.oberon.oss.chess.data.position.PositionImpl;
+import org.oberon.oss.chess.data.position.PositionImpl.ChessPositionBuilder;
+import org.oberon.oss.chess.data.board.Board;
+import org.oberon.oss.chess.data.position.Position;
+import org.oberon.oss.chess.data.field.ChessField;
+import org.oberon.oss.chess.data.field.FieldIteratorImpl;
+import org.oberon.oss.chess.data.ChessColor;
 import org.oberon.oss.chess.data.fen.FENPositionImpl.FENPositionBuilder;
+import org.oberon.oss.chess.data.field.FieldInformation;
+import org.oberon.oss.chess.data.field.FieldIterator;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.oberon.oss.chess.data.enums.ChessField.*;
-import static org.oberon.oss.chess.data.enums.ChessPiece.*;
-import static org.oberon.oss.chess.data.enums.Color.BLACK;
-import static org.oberon.oss.chess.data.enums.Color.WHITE;
+import static org.oberon.oss.chess.data.fen.FENChessPiece.lookupFENChessPiece;
+import static org.oberon.oss.chess.data.field.ChessField.*;
+import static org.oberon.oss.chess.data.ChessPiece.*;
+import static org.oberon.oss.chess.data.ChessColor.BLACK;
+import static org.oberon.oss.chess.data.ChessColor.WHITE;
 
 /**
  * Default implementation for the {@link FENPositionTranslator} interface
@@ -26,7 +34,8 @@ import static org.oberon.oss.chess.data.enums.Color.WHITE;
  * @since 1.0.0
  */
 @Log4j2
-public class FENPositionTranslatorImpl implements FENPositionTranslator<ChessFieldInformation> {
+@EqualsAndHashCode
+public class FENPositionTranslatorImpl implements FENPositionTranslator<FieldInformation> {
     protected static final Pattern DIGIT_PATTERN = Pattern.compile("\\d");
     protected static final Pattern FEN_PATTERN   = Pattern.compile(
           "((?:[kqrbnpKQRBNP1-8]{1,8}/?){8})" // group 1: position
@@ -38,29 +47,35 @@ public class FENPositionTranslatorImpl implements FENPositionTranslator<ChessFie
     );
 
     @Override
-    public FENPosition<ChessFieldInformation> toFENPosition(@NotNull String fenPositionSetupString) {
-        FENPositionBuilder positionBuilder = FENPositionImpl.builder();
+    public FENPosition<FieldInformation> toFENPosition(@NotNull String fenPositionSetupString) {
+        FENPositionBuilder   fenPositionBuilder   = FENPositionImpl.builder();
+        ChessPositionBuilder chessPositionBuilder = PositionImpl.builder();
 
         Matcher wrk = FEN_PATTERN.matcher(fenPositionSetupString);
         if (!wrk.matches()) {
             throw new FENTranslatorException("Invalid setup string: " + fenPositionSetupString);
         }
 
-        Map<ChessFieldInformation, Piece> position = Map.copyOf(extract(wrk.group(1)));
-        positionBuilder.board(position)
-                       .sideToMove(wrk.group(2).contentEquals("b") ? Color.BLACK : WHITE)
-                       .enPassantField(setEnPassantField(position, wrk.group(4)))
-                       .halveMoveClock(Integer.parseInt(wrk.group(5)))
-                       .fullMoveNumber(Integer.parseInt(wrk.group(6)));
+        Board<FieldInformation> board = extract(wrk.group(1));
+        chessPositionBuilder
+              .board(board)
+              .sideToMove(wrk.group(2).contentEquals("b") ? ChessColor.BLACK : WHITE)
+              .enPassantField(setEnPassantField(board, wrk.group(4)));
+        checkCastlingRights(board, wrk.group(3), chessPositionBuilder);
 
-        checkCastlingRights(position, wrk.group(3), positionBuilder);
-        return positionBuilder.build();
+        fenPositionBuilder
+              .chessPosition(chessPositionBuilder.build())
+              .halveMoveClock(Integer.parseInt(wrk.group(5)))
+              .fullMoveNumber(Integer.parseInt(wrk.group(6)));
+
+        return fenPositionBuilder.build();
     }
 
     @Override
-    public String toFENString(@NotNull FENPosition<ChessFieldInformation> position) {
-        StringBuilder sb = new StringBuilder();
-        convertPositionToString(position.board(), sb);
+    public String toFENString(@NotNull FENPosition<FieldInformation> fenPosition) {
+        StringBuilder              sb       = new StringBuilder();
+        Position<FieldInformation> position = fenPosition.chessPosition();
+        convertPositionToString(position.board().pieceMapping(), sb);
 
         sb.append(" ").append(position.sideToMove() == BLACK ? "b" : "w");
         sb.append(" ");
@@ -75,34 +90,34 @@ public class FENPositionTranslatorImpl implements FENPositionTranslator<ChessFie
         }
 
         sb.append(" ").append(position.enPassantField() == null ? "-" : position.enPassantField());
-        sb.append(" ").append(position.halveMoveClock());
-        sb.append(" ").append(position.fullMoveNumber());
+        sb.append(" ").append(fenPosition.halveMoveClock());
+        sb.append(" ").append(fenPosition.fullMoveNumber());
         return sb.toString();
     }
 
-    private void checkCastlingRights(Map<ChessFieldInformation, Piece> position, String castlingRights, FENPositionBuilder positionBuilder) {
+    private void checkCastlingRights(Board<FieldInformation> board, String castlingRights, ChessPositionBuilder positionBuilder) {
         if (!castlingRights.contentEquals("-")) {
             for (int i = 0; i < castlingRights.length(); i++) {
                 char c = castlingRights.charAt(i);
                 switch (c) {
                     case 'K':
-                        verifyIfFieldContains(position, E1, KING, WHITE);
-                        verifyIfFieldContains(position, H1, ROOK, WHITE);
+                        verifyIfFieldContains(board, E1, KING, WHITE);
+                        verifyIfFieldContains(board, H1, ROOK, WHITE);
                         positionBuilder.whiteCanCastleKingSide(true);
                         break;
                     case 'Q':
-                        verifyIfFieldContains(position, E1, KING, WHITE);
-                        verifyIfFieldContains(position, A1, ROOK, WHITE);
+                        verifyIfFieldContains(board, E1, KING, WHITE);
+                        verifyIfFieldContains(board, A1, ROOK, WHITE);
                         positionBuilder.whiteCanCastleQueenSide(true);
                         break;
                     case 'k':
-                        verifyIfFieldContains(position, E8, KING, BLACK);
-                        verifyIfFieldContains(position, H8, ROOK, BLACK);
+                        verifyIfFieldContains(board, E8, KING, BLACK);
+                        verifyIfFieldContains(board, H8, ROOK, BLACK);
                         positionBuilder.blackCanCastleKingSide(true);
                         break;
                     case 'q':
-                        verifyIfFieldContains(position, E8, KING, BLACK);
-                        verifyIfFieldContains(position, A8, ROOK, BLACK);
+                        verifyIfFieldContains(board, E8, KING, BLACK);
+                        verifyIfFieldContains(board, A8, ROOK, BLACK);
                         positionBuilder.blackCanCastleQueenSide(true);
                         break;
                     default:
@@ -112,28 +127,28 @@ public class FENPositionTranslatorImpl implements FENPositionTranslator<ChessFie
         }
     }
 
-    private void verifyIfFieldContains(Map<ChessFieldInformation, Piece> position, ChessField field, ChessPiece piece, Color color) {
-        ChessPiece chessPiece = position.get(field).getChessPiece();
-        Color      pieceColor = position.get(field).getPieceColor();
+    private void verifyIfFieldContains(Board<FieldInformation> board, ChessField field, ChessPiece piece, ChessColor color) {
+        ChessPiece chessPiece = board.pieceMapping().get(field).getChessPiece();
+        ChessColor    pieceColor    = board.pieceMapping().get(field).getPieceColor();
         if (chessPiece != piece && pieceColor != color) {
             throw new FENTranslatorException(String.format("Field %s does not contain a %s %s", field, chessPiece, pieceColor));
         }
     }
 
-    private ChessField setEnPassantField(Map<ChessFieldInformation, Piece> position, String enPassantField) {
+    private ChessField setEnPassantField(Board<FieldInformation> position, String enPassantField) {
         if (enPassantField.contentEquals("-")) {
             return null;
         }
         ChessField field = ChessField.valueOf(enPassantField);
-        verifyIfFieldContains(position, field, PAWN, field.getRank() == 6 ? Color.BLACK : WHITE);
+        verifyIfFieldContains(position, field, PAWN, field.getRank() == 6 ? ChessColor.BLACK : WHITE);
         return field;
     }
 
-    private Map<ChessFieldInformation, Piece> extract(String positionString) {
-        FieldIterator<ChessFieldInformation> iterator = ChessFieldIterator.chessBoardFieldIterator();
-        Map<ChessFieldInformation, Piece>    wrk      = new HashMap<>();
+    private Board<FieldInformation> extract(String positionString) {
+        FieldIterator<FieldInformation> iterator = FieldIteratorImpl.chessBoardFieldIterator();
+        ChessBoardBuilder               builder  = BoardImpl.builder();
 
-        ChessFieldInformation currentField;
+        FieldInformation currentField;
         for (String rank : positionString.split("/")) {
             for (int i = 0; i < rank.length(); i++) {
                 currentField = iterator.next();
@@ -144,29 +159,28 @@ public class FENPositionTranslatorImpl implements FENPositionTranslator<ChessFie
                     iterator.skipFields(parseInt);
                     LOGGER.debug("Skipping {} fields", parseInt);
                 } else {
-                    ChessPiece chessPiece = ChessPiece.lookup(content);
-                    Color      color;
+                    FENChessPiece fenChessPiece = lookupFENChessPiece(content);
+                    ChessColor    color;
                     if ("kqrbnp".contains(content)) {
-                        color = Color.BLACK;
+                        color = ChessColor.BLACK;
                     } else {
                         color = WHITE;
                     }
-
-                    wrk.put(currentField, new Piece(chessPiece, color));
+                    builder.addToPieceMapping(currentField, new Piece(fenChessPiece.getChessPiece(), color));
                     LOGGER.debug("Processing piece {} @ {}", content, currentField);
                 }
             }
         }
-        return wrk;
+        return builder.build();
     }
 
-    private void convertPositionToString(Map<ChessFieldInformation, Piece> position, StringBuilder sb) {
+    private void convertPositionToString(Map<FieldInformation, Piece> position, StringBuilder sb) {
         for (int rank = 8; rank >= 1; rank--) {
-            int                                  emptyFieldsCount = 0;
-            FieldIterator<ChessFieldInformation> iterator         = ChessFieldIterator.rankIterator(rank);
+            int                             emptyFieldsCount = 0;
+            FieldIterator<FieldInformation> iterator         = FieldIteratorImpl.rankIterator(rank);
             while (iterator.hasNext()) {
-                ChessFieldInformation field = iterator.next();
-                Piece                 piece = position.get(field);
+                FieldInformation field = iterator.next();
+                Piece            piece = position.get(field);
                 emptyFieldsCount = appendData(sb, piece, emptyFieldsCount);
             }
             if (emptyFieldsCount > 0) {
@@ -184,8 +198,7 @@ public class FENPositionTranslatorImpl implements FENPositionTranslator<ChessFie
                 sb.append(fieldsToSkip);
                 fieldsToSkip = 0;
             }
-            ChessPiece chessPiece = piece.getChessPiece();
-            sb.append(piece.getPieceColor() == BLACK ? chessPiece.getForBlack() : chessPiece.getForWhite());
+            sb.append(FENChessPiece.getFENCharacterForPiece(piece));
         } else {
             ++fieldsToSkip;
         }

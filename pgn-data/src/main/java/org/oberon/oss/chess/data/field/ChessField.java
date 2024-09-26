@@ -1,18 +1,18 @@
-package org.oberon.oss.chess.data.enums;
+package org.oberon.oss.chess.data.field;
 
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
-import org.oberon.oss.chess.data.ChessFieldInformation;
+import org.oberon.oss.chess.data.ChessColor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.oberon.oss.chess.data.enums.Color.BLACK;
-import static org.oberon.oss.chess.data.enums.Color.WHITE;
+import static org.oberon.oss.chess.data.ChessColor.BLACK;
+import static org.oberon.oss.chess.data.ChessColor.WHITE;
 
 /**
  * Enumerates the fields present on a chess board.
@@ -23,7 +23,7 @@ import static org.oberon.oss.chess.data.enums.Color.WHITE;
 @ToString
 @Getter
 @Log4j2
-public enum ChessField implements ChessFieldInformation {
+public enum ChessField implements FieldInformation {
     A8(WHITE), B8(BLACK), C8(WHITE), D8(BLACK), E8(WHITE), F8(BLACK), G8(WHITE), H8(BLACK),
     A7(BLACK), B7(WHITE), C7(BLACK), D7(WHITE), E7(BLACK), F7(WHITE), G7(BLACK), H7(WHITE),
     A6(WHITE), B6(BLACK), C6(WHITE), D6(BLACK), E6(WHITE), F6(BLACK), G6(WHITE), H6(BLACK),
@@ -33,11 +33,11 @@ public enum ChessField implements ChessFieldInformation {
     A2(WHITE), B2(BLACK), C2(WHITE), D2(BLACK), E2(WHITE), F2(BLACK), G2(WHITE), H2(BLACK),
     A1(BLACK), B1(WHITE), C1(BLACK), D1(WHITE), E1(BLACK), F1(WHITE), G1(BLACK), H1(WHITE);
 
-    private final Color  fieldColor;
-    private final String file;
+    private final ChessColor fieldColor;
+    private final String     file;
     private final Integer    rank;
 
-    ChessField(Color fieldColor) {
+    ChessField(ChessColor fieldColor) {
         this.fieldColor = fieldColor;
         file            = name().charAt(0) + "";
         rank            = Integer.parseInt(name().charAt(1) + "");

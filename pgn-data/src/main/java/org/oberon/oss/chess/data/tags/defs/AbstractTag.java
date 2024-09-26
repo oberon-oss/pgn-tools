@@ -3,7 +3,7 @@ package org.oberon.oss.chess.data.tags.defs;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
-import org.oberon.oss.chess.data.enums.TagType;
+import org.oberon.oss.chess.data.tags.TagType;
 
 /**
  * @param <V> Type class of the data contained by the element.

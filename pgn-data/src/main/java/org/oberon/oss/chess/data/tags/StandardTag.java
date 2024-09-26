@@ -4,7 +4,6 @@ package org.oberon.oss.chess.data.tags;
 import lombok.Getter;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
-import org.oberon.oss.chess.data.enums.TagType;
 import org.oberon.oss.chess.data.tags.defs.AbstractTag;
 
 @Getter

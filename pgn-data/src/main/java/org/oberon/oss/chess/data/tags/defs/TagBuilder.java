@@ -2,8 +2,8 @@ package org.oberon.oss.chess.data.tags.defs;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import org.oberon.oss.chess.data.enums.TagType;
-import org.oberon.oss.chess.data.tags.FENTag;
+import org.oberon.oss.chess.data.tags.TagType;
+import org.oberon.oss.chess.data.fen.FENTag;
 import org.oberon.oss.chess.data.tags.RatingTag;
 import org.oberon.oss.chess.data.tags.StandardTag;
 

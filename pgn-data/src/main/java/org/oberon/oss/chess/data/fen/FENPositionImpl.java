@@ -4,12 +4,8 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import org.oberon.oss.chess.data.Piece;
-import org.oberon.oss.chess.data.enums.ChessField;
-import org.oberon.oss.chess.data.ChessFieldInformation;
-import org.oberon.oss.chess.data.enums.Color;
-
-import java.util.Map;
+import org.oberon.oss.chess.data.field.FieldInformation;
+import org.oberon.oss.chess.data.position.Position;
 
 /**
  * Default implementation of the {@link FENPosition} interface.
@@ -21,14 +17,8 @@ import java.util.Map;
 @Accessors(fluent = true)
 @Getter
 @EqualsAndHashCode
-public class FENPositionImpl implements FENPosition<ChessFieldInformation> {
-    private final Map<ChessFieldInformation, Piece> board;
-    private final Color                             sideToMove;
-    private final int                               halveMoveClock;
-    private final int                               fullMoveNumber;
-    private final ChessField                        enPassantField;
-    private final boolean                           whiteCanCastleKingSide;
-    private final boolean                           whiteCanCastleQueenSide;
-    private final boolean                           blackCanCastleKingSide;
-    private final boolean                           blackCanCastleQueenSide;
+public class FENPositionImpl implements FENPosition<FieldInformation> {
+    private final Position<FieldInformation> chessPosition;
+    private final int                        halveMoveClock;
+    private final int                        fullMoveNumber;
 }

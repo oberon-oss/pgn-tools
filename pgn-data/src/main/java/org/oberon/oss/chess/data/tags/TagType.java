@@ -1,4 +1,4 @@
-package org.oberon.oss.chess.data.enums;
+package org.oberon.oss.chess.data.tags;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +52,7 @@ public enum TagType {
     // Tag definition for tags currently unknown or not yet supported6
     USER_DEFINED_TAG("*");
 
-    private final String  lookupName;
+    private final String lookupName;
 
     @Getter
     private final boolean required;

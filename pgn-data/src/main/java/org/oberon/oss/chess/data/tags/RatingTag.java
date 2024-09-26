@@ -1,7 +1,6 @@
 package org.oberon.oss.chess.data.tags;
 
 import org.jetbrains.annotations.NotNull;
-import org.oberon.oss.chess.data.enums.TagType;
 import org.oberon.oss.chess.data.tags.defs.AbstractTag;
 import org.oberon.oss.chess.data.tags.defs.TagValueFromString;
 

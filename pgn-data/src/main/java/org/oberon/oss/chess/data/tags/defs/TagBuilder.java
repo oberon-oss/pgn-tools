@@ -26,8 +26,7 @@ public class TagBuilder<V> {
     private String  value;
 
     /**
-     * sets the tag type for the tag under construction. if the name specified for the 'tagTypeName' parameter is not defined as an
-     * element in the {@link TagType} enumeration, the @{@link TagType#USER_DEFINED_TAG} type will be used.
+     * sets the tag type for the tag under construction. 
      *
      * @param tagTypeName Name of the tag type.
      *

@@ -41,7 +41,7 @@ public class FieldIteratorImpl implements FieldIterator<FieldInformation> {
 
     @Override
     public void skipFields(int skipCount) {
-        if (skipCount < 2 || skipCount + index >= fields.size()) {
+        if (skipCount < 1 || skipCount + index >= fields.size()) {
             throw new IllegalArgumentException("Invalid skip count: " + skipCount);
         }
         index += skipCount - 1;

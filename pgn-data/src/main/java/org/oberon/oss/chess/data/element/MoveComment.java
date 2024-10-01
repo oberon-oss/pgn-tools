@@ -8,6 +8,8 @@ import java.util.regex.Pattern;
 /**
  * Stores a move comment from a game in PGN format.
  *
+ * @param text The comment text
+ *
  * @author fhdumay
  * @since 1.0.0
  */

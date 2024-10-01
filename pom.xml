@@ -131,6 +131,11 @@
                 <artifactId>antlr4-maven-plugin</artifactId>
                 <version>${antlr4.version}</version>
             </dependency>
+            <dependency>
+                <groupId>net.oberon.oss.chess</groupId>
+                <artifactId>chess-base</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
         </dependencies>
 
     </dependencyManagement>
@@ -163,6 +168,11 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.13.0</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.10.0</version>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -174,6 +184,14 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.12</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+
+                <configuration>
+                    <doclint>all,-missing</doclint>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -250,14 +268,28 @@
             <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>net.oberon.oss.chess</groupId>
+            <artifactId>chess-base</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>gitlab-maven-repo</id>
+            <url>https://gitlab.oberon-oss.net/api/v4/projects/1/packages/maven</url>
+        </repository>
+    </repositories>
 
     <distributionManagement>
         <repository>
-            <id>github</id>
-            <name>GitHub oberon-oss Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/oberon-oss/pgn-tools</url>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.oberon-oss.net/api/v4/projects/1/packages/maven</url>
         </repository>
+        <snapshotRepository>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.oberon-oss.net/api/v4/projects/1/packages/maven</url>
+        </snapshotRepository>
     </distributionManagement>
-
 </project>

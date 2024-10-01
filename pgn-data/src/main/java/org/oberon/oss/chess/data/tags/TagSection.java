@@ -13,6 +13,8 @@ import java.util.Set;
 import static org.oberon.oss.chess.data.tags.TagType.*;
 
 /**
+ * A collection of tags that where read for a PGN game.
+ *
  * @author Fabien H. Dumay
  * @since 1.0.0
  */

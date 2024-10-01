@@ -11,7 +11,11 @@ import java.util.Map;
 import static org.oberon.oss.chess.data.ChessColor.BLACK;
 
 /**
+ * Extends the information contained in the {@link ChessPiece} enumeration by adding the representation of the black and white
+ * pieces as defined in a FEN setup string.
+ *
  * @author Fabien H. Dumay
+ * @since 1.0.0
  */
 @Getter
 public enum FENChessPiece {
@@ -43,6 +47,28 @@ public enum FENChessPiece {
         LOOKUP_MAP = Map.copyOf(map);
     }
 
+    /**
+     * Performs a lookup of the specified fen type string.
+     *
+     * @param fenType The fen type string to lookup. This must be one of the following values:
+     *                <ul>
+     *                <li>r: black rook</li>
+     *                <li>n: black knight</li>
+     *                <li>b: black bishop</li>
+     *                <li>q: black queen</li>
+     *                <li>k: black king</li>
+     *                <li>R: white rook</li>
+     *                <li>N: white knight</li>
+     *                <li>B: white bishop</li>
+     *                <li>Q: white queen</li>
+     *                <li>K: white king</li>
+     *                </ul>
+     *
+     * @return the FEN chess piece.
+     *
+     * @throws IllegalArgumentException if the value for the 'fenType' parameter is not in the above specified list.
+     * @since 1.0.0
+     */
     public static FENChessPiece lookupFENChessPiece(String fenType) {
         FENChessPiece piece = LOOKUP_MAP.get(fenType);
         if (piece == null) {

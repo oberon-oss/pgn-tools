@@ -5,6 +5,8 @@ import java.util.Iterator;
 /**
  * Extends the basic Iterator class with a method to skip fields.
  *
+ * @param <F> interface or class that extends the FieldInformation Interface.
+ *
  * @author Fabien H. Dumay
  * @since 1.0.0
  */

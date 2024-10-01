@@ -7,11 +7,16 @@ import lombok.ToString;
 import java.util.Objects;
 
 /**
+ * Describes the attribute of an active piece on the chess board.
+ *
  * @author Fabien H. Dumay
+ * @since 1.0.0
  */
+
 @ToString
 @Getter
 @AllArgsConstructor
+@SuppressWarnings("ClassCanBeRecord")
 public class Piece {
     private final ChessPiece chessPiece;
     private final ChessColor pieceColor;

@@ -5,7 +5,7 @@
 grammar PGNImportFormat;
 
 @header {
-package org.oberon.oss.chess.reader;
+package generated.antlr;
 }
 parse
  : pgnGame EOF

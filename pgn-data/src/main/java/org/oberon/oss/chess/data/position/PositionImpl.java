@@ -9,7 +9,10 @@ import org.oberon.oss.chess.data.ChessColor;
 import org.oberon.oss.chess.data.field.FieldInformation;
 
 /**
+ * Describes a position in a chess game.
+ *
  * @author Fabien H. Dumay
+ * @since 1.0.0
  */
 @Getter
 @Builder(builderClassName = "ChessPositionBuilder")
@@ -23,4 +26,8 @@ public class PositionImpl implements Position<FieldInformation> {
     private final boolean                 whiteCanCastleQueenSide;
     private final boolean                 blackCanCastleKingSide;
     private final boolean                 blackCanCastleQueenSide;
+
+    @SuppressWarnings("java:S2094") // Prevent javadoc complaining about missing builders
+    public static final class ChessPositionBuilder {
+    }
 }

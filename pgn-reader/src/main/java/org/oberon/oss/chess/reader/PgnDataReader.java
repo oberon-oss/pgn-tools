@@ -15,6 +15,9 @@
  */
 package org.oberon.oss.chess.reader;
 
+import generated.antlr.PGNImportFormatLexer;
+import generated.antlr.PGNImportFormatParser;
+import generated.antlr.PGNImportFormatParser.*;
 import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -25,10 +28,10 @@ import org.jetbrains.annotations.NotNull;
 import org.oberon.oss.chess.data.Game;
 import org.oberon.oss.chess.data.Game.GameBuilder;
 import org.oberon.oss.chess.data.GameTermination;
-import org.oberon.oss.chess.data.tags.TagSection;
-import org.oberon.oss.chess.data.tags.TagSection.TagSectionBuilder;
 import org.oberon.oss.chess.data.element.*;
 import org.oberon.oss.chess.data.element.ElementSequence.ElementSequenceBuilder;
+import org.oberon.oss.chess.data.tags.TagSection;
+import org.oberon.oss.chess.data.tags.TagSection.TagSectionBuilder;
 import org.oberon.oss.chess.data.tags.defs.AbstractTag;
 import org.oberon.oss.chess.data.tags.defs.TagBuilder;
 
@@ -39,6 +42,8 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
+
+import generated.antlr.PGNImportFormatBaseListener;
 
 /**
  * .
@@ -100,20 +105,20 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
     }
 
     @Override
-    public void exitMoveTextSection(PGNImportFormatParser.MoveTextSectionContext ctx) {
+    public void exitMoveTextSection(MoveTextSectionContext ctx) {
         gameBuilder.elementSequence(elementSequenceBuilder.build());
         elementSequenceBuilder = ElementSequence.builder();
     }
 
     @Override
-    public void enterRecursiveVariation(PGNImportFormatParser.RecursiveVariationContext ctx) {
+    public void enterRecursiveVariation(RecursiveVariationContext ctx) {
         LOGGER.debug("Entering recursive variation at depth {}", builderStack.size());
         builderStack.push(elementSequenceBuilder);
         elementSequenceBuilder = ElementSequence.builder();
     }
 
     @Override
-    public void exitRecursiveVariation(PGNImportFormatParser.RecursiveVariationContext ctx) {
+    public void exitRecursiveVariation(RecursiveVariationContext ctx) {
         LOGGER.debug("Leaving recursive variation at depth {}", builderStack.size());
         ElementSequenceBuilder oldBuilder = builderStack.pop();
         oldBuilder.element(elementSequenceBuilder.build());
@@ -121,23 +126,23 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
     }
 
     @Override
-    public void enterMoveNumberIndication(PGNImportFormatParser.MoveNumberIndicationContext ctx) {
+    public void enterMoveNumberIndication(MoveNumberIndicationContext ctx) {
         elementSequenceBuilder.element(new MoveNumberIndication(ctx.getText()));
     }
 
     @Override
-    public void enterSanMove(PGNImportFormatParser.SanMoveContext ctx) {
+    public void enterSanMove(SanMoveContext ctx) {
         elementSequenceBuilder.element(new SanMove(ctx.getText()));
     }
 
     @Override
-    public void enterMoveComment(PGNImportFormatParser.MoveCommentContext ctx) {
+    public void enterMoveComment(MoveCommentContext ctx) {
         elementSequenceBuilder.element(new MoveComment(ctx.getText()));
     }
 
 
     @Override
-    public void enterNag(PGNImportFormatParser.NagContext ctx) {
+    public void enterNag(NagContext ctx) {
         elementSequenceBuilder.element(new Nag(ctx.getText()));
     }
 
@@ -155,55 +160,55 @@ public class PgnDataReader extends PGNImportFormatBaseListener {
     }
 
     @Override
-    public void enterRestOfLineComment(PGNImportFormatParser.RestOfLineCommentContext ctx) {
+    public void enterRestOfLineComment(RestOfLineCommentContext ctx) {
         elementSequenceBuilder.element(new RestOfLineComment(ctx.getText()));
     }
 
     @Override
-    public void enterProcessingInstruction(PGNImportFormatParser.ProcessingInstructionContext ctx) {
+    public void enterProcessingInstruction(ProcessingInstructionContext ctx) {
         elementSequenceBuilder.element(new ProcessingInstruction(ctx.getText()));
     }
 
     @Override
-    public void enterGameTermination(PGNImportFormatParser.GameTerminationContext ctx) {
+    public void enterGameTermination(GameTerminationContext ctx) {
         gameBuilder.gameTermination(new GameTermination(ctx.getText()));
     }
 
     @Override
-    public void enterParse(PGNImportFormatParser.ParseContext ctx) {
+    public void enterParse(ParseContext ctx) {
         start = System.nanoTime();
         LOGGER.trace("enter: enterParse");
     }
 
     @Override
-    public void exitParse(PGNImportFormatParser.ParseContext ctx) {
+    public void exitParse(ParseContext ctx) {
         builder.setParseTime((int) (System.nanoTime() - start));
         LOGGER.trace("leave: enterParse");
     }
 
     @Override
-    public void exitPgnGame(PGNImportFormatParser.PgnGameContext ctx) {
+    public void exitPgnGame(PgnGameContext ctx) {
         builder.setGame(gameBuilder.build());
     }
 
     @Override
-    public void exitTagSection(PGNImportFormatParser.TagSectionContext ctx) {
+    public void exitTagSection(TagSectionContext ctx) {
         gameBuilder.tagSection(tagSectionBuilder.build());
     }
 
     @Override
-    public void exitTagPair(PGNImportFormatParser.TagPairContext ctx) {
+    public void exitTagPair(TagPairContext ctx) {
         tagSectionBuilder.tag(tagBuilder.build());
         tagBuilder = new TagBuilder<>();
     }
 
     @Override
-    public void enterTagName(PGNImportFormatParser.TagNameContext ctx) {
+    public void enterTagName(TagNameContext ctx) {
         tagBuilder.setTagType(ctx.getText().trim());
     }
 
     @Override
-    public void enterTagValue(PGNImportFormatParser.TagValueContext ctx) {
+    public void enterTagValue(TagValueContext ctx) {
         tagBuilder.setValue(ctx.getText());
     }
 

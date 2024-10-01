@@ -55,7 +55,7 @@ public class LogPropertiesException extends Exception {
 	 *
 	 * @param message the detail message (which is saved for later retrieval by the {@link #getMessage()} method).
 	 * @param cause   the cause (which is saved for later retrieval by the {@link #getCause()} method).  (A
-	 *                <tt>null</tt> value is permitted, and indicates that the cause is nonexistent or unknown.)
+	 *                <i>null</i> value is permitted, and indicates that the cause is nonexistent or unknown.)
 	 *
 	 * @since 8.0.0
 	 */
@@ -67,10 +67,10 @@ public class LogPropertiesException extends Exception {
 	}
 
 	/**
-	 * Constructs a new exception with the specified cause and a detail message of <tt>(cause==null ? null :
-	 * cause.toString())</tt> (which typically contains the class and detail message of <tt>cause</tt>).
+	 * Constructs a new exception with the specified cause and a detail message of <i>(cause==null ? null :
+	 * cause.toString())</i> (which typically contains the class and detail message of <i>cause</i>).
 	 *
-	 * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method).  (A <tt>null</tt>
+	 * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method).  (A <i>null</i>
 	 *              value is permitted, and indicates that the cause is nonexistent or unknown.)
 	 *
 	 * @since 8.0.0

@@ -7,7 +7,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Enumerates the required and (optional) well known tags that can occur in a PGN notated game.
+ *
  * @author Fabien H. Dumay
+ * @since 1.0.0
  */
 public enum TagType {
     // Seven tag roster tags

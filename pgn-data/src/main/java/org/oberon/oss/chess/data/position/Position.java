@@ -9,6 +9,8 @@ import org.oberon.oss.chess.data.field.FieldInformation;
 /**
  * Allows the querying of the information extracted from a FEN setup string.
  *
+ * @param <F> interface or class that extends the FieldInformation Interface.
+ *
  * @author Fabien H. Dumay
  * @since 1.0.0
  */

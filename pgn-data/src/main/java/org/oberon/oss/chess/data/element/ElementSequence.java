@@ -8,6 +8,8 @@ import lombok.ToString;
 import java.util.List;
 
 /**
+ * Defines a sequence of 0 or more elements.
+ *
  * @author Fabien H. Dumay
  * @since 1.0.0
  */
